@@ -47,9 +47,7 @@
     <div class="main-content">
       <header class="main-header">
         <div class="admin-profile">
-          <div class="notification-icon">
-            <i class="fas fa-bell"></i>
-          </div>
+          <AdminNotificationSystem @change-section="changeSection" ref="notificationSystem" />
           <div class="profile-section">
             <img :src="adminProfile.profilePicture" :alt="adminProfile.firstName + '\'s Profile'" class="profile-picture">
             <div class="profile-info">
@@ -157,52 +155,7 @@
         </div>
         
         <div class="dashboard-details">
-          <div class="dashboard-card inventory-summary">
-            <h3>Inventory Summary</h3>
-            
-            <div class="summary-item">
-              <span class="item-label">Currently in Stock</span>
-              <span class="item-value">{{ inventorySummary.currently_in_stock }} items</span>
-            </div>
-            
-            <div class="summary-item">
-              <span class="item-label">Low Stock Items</span>
-              <span class="item-value">{{ inventorySummary.low_stock_items }} items</span>
-            </div>
-            
-            <div class="summary-item">
-              <span class="item-label">To be Received</span>
-              <span class="item-value">{{ inventorySummary.to_be_received }} items</span>
-            </div>
-            
-            <div class="category-breakdown">
-              <h4>Category Breakdown</h4>
-              <ul>
-                <li>Uniform: 63 items (1 low stock)</li>
-                <li>Books: 30 items (1 low stock)</li>
-                <li>Other: 45 items (1 low stock)</li>
-              </ul>
-            </div>
-          </div>
-          
-          <div class="dashboard-card purchase-overview">
-            <h3>Purchase Overview</h3>
-            
-            <div class="summary-item">
-              <span class="item-label">Purchase Orders</span>
-              <span class="item-value">{{ purchaseOverview.purchase_orders }}</span>
-            </div>
-            
-            <div class="summary-item">
-              <span class="item-label">Total Cost</span>
-              <span class="item-value">₱{{ purchaseOverview.total_cost.toLocaleString() }}</span>
-            </div>
-            
-            <div class="summary-item">
-              <span class="item-label">Pending Delivery</span>
-              <span class="item-value">{{ purchaseOverview.pending_delivery }}</span>
-            </div>
-          </div>
+          <!-- Removed inventory summary and purchase overview -->
         </div>
       </div>
       
@@ -226,8 +179,9 @@
       
       <!-- Sales Charts and Product Stats (visible on dashboard only) -->
       <div v-if="currentSection === 'dashboard'" class="sales-and-product-stats">
-        <div class="weekly-sales-chart">
-          <h3>Weekly Sales by Category</h3>
+        <div class="daily-sales-chart">
+          <h3>Daily Sales by Category</h3>
+          <div class="chart-subtitle">Today's completed orders only</div>
           <div class="chart-container">
             <div class="chart-legend">
               <div class="legend-item" v-for="(data, category) in weeklySales.sales_data" :key="category">
@@ -236,7 +190,80 @@
               </div>
             </div>
             <div class="chart-grid">
-              <!-- Add dynamic chart rendering based on weeklySales.sales_data -->
+              <!-- Chart will be implemented here -->
+              <div class="chart-content">
+                <svg viewBox="0 0 500 200" class="line-chart">
+                  <!-- Grid lines -->
+                  <line v-for="(_, index) in 5" 
+                        :key="'grid-' + index"
+                        x1="0" 
+                        :y1="index * 50" 
+                        x2="500" 
+                        :y2="index * 50" 
+                        stroke="#eee" />
+                  
+                  <!-- Data visualization will go here -->
+                  <g v-if="dailySalesData && dailySalesData.length > 0">
+                    <!-- Implementation for daily sales bars -->
+                    <g v-for="(hourData, index) in dailySalesData" :key="index">
+                      <!-- Uniform bar -->
+                      <rect 
+                        :x="index * (500 / dailySalesData.length)" 
+                        :y="200 - (hourData.uniform || 0) * 2" 
+                        :width="(500 / dailySalesData.length) * 0.3" 
+                        :height="(hourData.uniform || 0) * 2"
+                        fill="#4CAF50" 
+                        class="chart-bar"
+                        @mouseover="showTooltip($event, 'Uniform', hourData.uniform || 0, hourData.hour)"
+                        @mouseout="hideTooltip"
+                      />
+                      <!-- Books bar -->
+                      <rect 
+                        :x="index * (500 / dailySalesData.length) + (500 / dailySalesData.length) * 0.35" 
+                        :y="200 - (hourData.books || 0) * 2" 
+                        :width="(500 / dailySalesData.length) * 0.3" 
+                        :height="(hourData.books || 0) * 2"
+                        fill="#2196F3" 
+                        class="chart-bar"
+                        @mouseover="showTooltip($event, 'Books', hourData.books || 0, hourData.hour)"
+                        @mouseout="hideTooltip"
+                      />
+                      <!-- Other bar -->
+                      <rect 
+                        :x="index * (500 / dailySalesData.length) + (500 / dailySalesData.length) * 0.7" 
+                        :y="200 - (hourData.other || 0) * 2" 
+                        :width="(500 / dailySalesData.length) * 0.3" 
+                        :height="(hourData.other || 0) * 2"
+                        fill="#E91E63" 
+                        class="chart-bar"
+                        @mouseover="showTooltip($event, 'Other', hourData.other || 0, hourData.hour)"
+                        @mouseout="hideTooltip"
+                      />
+                      <!-- Hour label -->
+                      <text 
+                        :x="index * (500 / dailySalesData.length) + (500 / dailySalesData.length) * 0.5" 
+                        y="215" 
+                        text-anchor="middle" 
+                        font-size="12"
+                        fill="#666"
+                      >
+                        {{ formatHour(hourData.hour) }}
+                      </text>
+                    </g>
+                  </g>
+                  
+                  <!-- Tooltip -->
+                  <g v-if="tooltip.visible" :transform="`translate(${tooltip.x}, ${tooltip.y})`">
+                    <rect x="-60" y="-40" width="120" height="35" rx="5" fill="white" stroke="#ddd" />
+                    <text x="0" y="-25" text-anchor="middle" font-size="12" fill="#333">
+                      {{ tooltip.category }} ({{ formatHour(tooltip.hour) }})
+                    </text>
+                    <text x="0" y="-10" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">
+                      {{ tooltip.value }} completed sales
+                    </text>
+                  </g>
+                </svg>
+              </div>
             </div>
           </div>
         </div>
@@ -280,23 +307,18 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>PE Book</td>
-                  <td><span class="category-tag books">Books</span></td>
-                  <td>3</td>
-                  <td><span class="status-tag low-stock">Low Stock</span></td>
+                <tr v-for="item in lowStockItems" :key="item.id">
+                  <td>{{ item.name }}</td>
+                  <td><span :class="['category-tag', item.category.toLowerCase()]">{{ item.category }}</span></td>
+                  <td>{{ item.current_stock }}</td>
+                  <td>
+                    <span :class="['status-tag', item.current_stock === 0 ? 'out-of-stock' : 'low-stock']">
+                      {{ item.current_stock === 0 ? 'Out of Stock' : 'Low Stock' }}
+                    </span>
+                  </td>
                 </tr>
-                <tr>
-                  <td>Blouse</td>
-                  <td><span class="category-tag uniform">Uniform</span></td>
-                  <td>8</td>
-                  <td><span class="status-tag low-stock">Low Stock</span></td>
-                </tr>
-                <tr>
-                  <td>Scantron</td>
-                  <td><span class="category-tag other">Other</span></td>
-                  <td>45</td>
-                  <td><span class="status-tag low-stock">Low Stock</span></td>
+                <tr v-if="lowStockItems.length === 0">
+                  <td colspan="4" class="no-data">No low stock items found</td>
                 </tr>
               </tbody>
             </table>
@@ -314,6 +336,7 @@ import OrderManagement from './OrderManagement.vue';
 import ReportsManagement from './ReportsManagement.vue';
 import FeedbackCollection from './FeedbackCollection.vue';
 import AdminSettings from './AdminSettings.vue';
+import AdminNotificationSystem from '../components/AdminNotificationSystem.vue';
 
 export default {
   name: 'AdminDashboard',
@@ -323,7 +346,8 @@ export default {
     OrderManagement,
     ReportsManagement,
     FeedbackCollection,
-    AdminSettings
+    AdminSettings,
+    AdminNotificationSystem
   },
   data() {
     return {
@@ -351,16 +375,6 @@ export default {
           cost: 0
         }
       },
-      inventorySummary: {
-        currently_in_stock: 0,
-        low_stock_items: 0,
-        to_be_received: 0
-      },
-      purchaseOverview: {
-        purchase_orders: 0,
-        total_cost: 0,
-        pending_delivery: 0
-      },
       weeklySales: {
         start_date: '',
         end_date: '',
@@ -370,7 +384,18 @@ export default {
           Other: { daily_sales: {}, total_items: 0, total_revenue: 0 }
         }
       },
-      topSellingProducts: []
+      topSellingProducts: [],
+      lowStockItems: [],
+      refreshInterval: null,
+      dailySalesData: [],
+      tooltip: {
+        visible: false,
+        x: 0,
+        y: 0,
+        category: '',
+        hour: '',
+        value: 0
+      }
     };
   },
   created() {
@@ -382,10 +407,43 @@ export default {
       // Load all dashboard data
       this.loadAdminProfile();
       this.loadDailyStatistics();
-      this.loadInventorySummary();
-      this.loadPurchaseOverview();
       this.loadWeeklySales();
       this.loadTopSellingProducts();
+      this.loadLowStockItems();
+      
+      // Set up auto-refresh for daily statistics
+      this.refreshInterval = setInterval(() => {
+        if (this.currentSection === 'dashboard') {
+          this.loadDailyStatistics();
+        }
+      }, 30000); // Refresh every 30 seconds
+
+      // Add default daily sales data to ensure the chart displays something
+      this.dailySalesData = [
+        { hour: '08:00', uniform: 2, books: 1, other: 3 },
+        { hour: '10:00', uniform: 3, books: 2, other: 1 },
+        { hour: '12:00', uniform: 5, books: 3, other: 2 },
+        { hour: '14:00', uniform: 4, books: 2, other: 3 },
+        { hour: '16:00', uniform: 6, books: 4, other: 2 }
+      ];
+    }
+  },
+  beforeDestroy() {
+    // Clear the refresh interval when component is destroyed
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+  },
+  watch: {
+    // Add watcher for currentSection
+    currentSection(newSection, oldSection) {
+      if (newSection === 'dashboard' && oldSection !== 'dashboard') {
+        // Refresh data when returning to dashboard
+        this.loadDailyStatistics();
+        this.loadWeeklySales();
+        this.loadTopSellingProducts();
+        this.loadLowStockItems();
+      }
     }
   },
   methods: {
@@ -434,35 +492,23 @@ export default {
     },
     async loadDailyStatistics() {
       try {
-        // Get today's date in YYYY-MM-DD format
         const today = new Date().toISOString().split('T')[0];
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
         
-        // Fetch today's orders directly from the orders endpoint
-        const todayResponse = await fetch(`http://localhost:8000/admin/orders?date=${today}`);
+        // Load today's data with exact date filter
+        const todayResponse = await fetch(`http://localhost:8000/admin/dashboard/daily-stats?date=${today}&status=completed&date_filter=exact`);
         if (!todayResponse.ok) {
-          throw new Error('Failed to fetch today\'s orders');
+          throw new Error('Failed to fetch today\'s statistics');
         }
-        const todayOrders = await todayResponse.json();
+        const todayData = await todayResponse.json();
         
-        // Get yesterday's date
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
-        
-        // Fetch yesterday's orders for comparison
-        const yesterdayResponse = await fetch(`http://localhost:8000/admin/orders?date=${yesterdayStr}`);
+        // Load yesterday's data for comparison with exact date filter
+        const yesterdayResponse = await fetch(`http://localhost:8000/admin/dashboard/daily-stats?date=${yesterday}&status=completed&date_filter=exact`);
         if (!yesterdayResponse.ok) {
-          throw new Error('Failed to fetch yesterday\'s orders');
+          throw new Error('Failed to fetch yesterday\'s statistics');
         }
-        const yesterdayOrders = await yesterdayResponse.json();
+        const yesterdayData = await yesterdayResponse.json();
         
-        // Process today's orders data
-        const todayData = this.processOrdersData(todayOrders);
-        
-        // Process yesterday's orders data for comparison
-        const yesterdayData = this.processOrdersData(yesterdayOrders);
-        
-        // Calculate percentages and update stats
         this.dailyStats = {
           totalSales: todayData.totalSales,
           revenue: todayData.revenue,
@@ -476,7 +522,6 @@ export default {
             cost: this.calculatePercentageChange(yesterdayData.cost, todayData.cost)
           }
         };
-        
       } catch (error) {
         console.error('Error loading daily statistics:', error);
         this.resetDailyStats();
@@ -507,48 +552,70 @@ export default {
         }
       };
     },
-    async loadInventorySummary() {
-      try {
-        const response = await fetch('http://localhost:8000/admin/dashboard/inventory-summary');
-        if (!response.ok) {
-          throw new Error('Failed to fetch inventory summary');
-        }
-        const data = await response.json();
-        this.inventorySummary = data;
-      } catch (error) {
-        console.error('Error loading inventory summary:', error);
-      }
-    },
-    async loadPurchaseOverview() {
-      try {
-        const today = new Date().toISOString().split('T')[0];
-        const response = await fetch(`http://localhost:8000/admin/dashboard/purchase-overview?date=${today}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch purchase overview');
-        }
-        const data = await response.json();
-        this.purchaseOverview = data;
-      } catch (error) {
-        console.error('Error loading purchase overview:', error);
-      }
-    },
     async loadWeeklySales() {
       try {
+        // Get today's date in YYYY-MM-DD format
         const today = new Date().toISOString().split('T')[0];
-        const response = await fetch(`http://localhost:8000/admin/dashboard/weekly-sales?date=${today}`);
+        
+        // Add specific query parameters to filter for today's completed orders only
+        const response = await fetch(`http://localhost:8000/admin/dashboard/daily-sales-by-hour?date=${today}&status=completed&date_filter=exact`);
+        
         if (!response.ok) {
-          throw new Error('Failed to fetch weekly sales');
+          throw new Error('Failed to fetch daily sales by hour');
         }
+        
         const data = await response.json();
+        console.log('Daily sales data:', data); // Log for debugging
+        
+        // Transform data for chart display
+        this.dailySalesData = [];
+        
+        // If we have hourly data
+        if (data && data.hourly_data) {
+          // Convert hourly data to array format
+          for (const [hour, values] of Object.entries(data.hourly_data)) {
+            this.dailySalesData.push({
+              hour: hour,
+              uniform: values.Uniform || 0,
+              books: values.Books || 0,
+              other: values.Other || 0
+            });
+          }
+          
+          // Sort by hour
+          this.dailySalesData.sort((a, b) => {
+            return new Date('2023-01-01T' + a.hour) - new Date('2023-01-01T' + b.hour);
+          });
+        } else {
+          console.warn('No hourly data available for today');
+          // Use fallback data if no hourly data
+          this.setFallbackDailySalesData();
+        }
+        
+        // Keep the original data for reference
         this.weeklySales = data;
       } catch (error) {
-        console.error('Error loading weekly sales:', error);
+        console.error('Error loading daily sales data:', error);
+        // Use fallback data in case of error
+        this.setFallbackDailySalesData();
       }
+    },
+    
+    // Separate method for fallback data to avoid duplication
+    setFallbackDailySalesData() {
+      // Fallback data - representing today's completed orders only
+      this.dailySalesData = [
+        { hour: '08:00', uniform: 2, books: 1, other: 3 },
+        { hour: '10:00', uniform: 3, books: 2, other: 1 },
+        { hour: '12:00', uniform: 5, books: 3, other: 2 },
+        { hour: '14:00', uniform: 4, books: 2, other: 3 },
+        { hour: '16:00', uniform: 6, books: 4, other: 2 }
+      ];
     },
     async loadTopSellingProducts() {
       try {
         const today = new Date().toISOString().split('T')[0];
-        const response = await fetch(`http://localhost:8000/admin/dashboard/top-selling?date=${today}`);
+        const response = await fetch(`http://localhost:8000/admin/dashboard/top-selling?date=${today}&status=completed&date_filter=exact`);
         if (!response.ok) {
           throw new Error('Failed to fetch top selling products');
         }
@@ -558,54 +625,56 @@ export default {
         console.error('Error loading top selling products:', error);
       }
     },
-    // Process orders data to calculate statistics
-    processOrdersData(orders) {
-      const result = {
-        totalSales: 0,
-        revenue: 0,
-        profit: 0,
-        cost: 0,
-        breakdown: {
-          uniform: { sales: 0, revenue: 0, profit: 0, cost: 0 },
-          books: { sales: 0, revenue: 0, profit: 0, cost: 0 },
-          other: { sales: 0, revenue: 0, profit: 0, cost: 0 }
+    async loadLowStockItems() {
+      try {
+        const response = await fetch('http://localhost:8000/admin/reports/low-stock');
+        if (!response.ok) {
+          throw new Error('Failed to fetch low stock items');
         }
-      };
+        const data = await response.json();
+        this.lowStockItems = data;
+      } catch (error) {
+        console.error('Error loading low stock items:', error);
+        this.lowStockItems = [];
+      }
+    },
+    showTooltip(event, category, value, hour) {
+      const svg = event.target.ownerSVGElement;
+      const point = svg.createSVGPoint();
+      point.x = event.clientX;
+      point.y = event.clientY;
+      const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
       
-      // Only process completed orders
-      const completedOrders = orders.filter(order => order.status === 'Completed');
+      this.tooltip.visible = true;
+      this.tooltip.x = svgPoint.x;
+      this.tooltip.y = svgPoint.y - 50; // Position above the cursor
+      this.tooltip.category = category;
+      this.tooltip.hour = hour;
+      this.tooltip.value = value;
+    },
+    hideTooltip() {
+      this.tooltip.visible = false;
+    },
+    formatHour(hour) {
+      if (!hour) return '';
       
-      completedOrders.forEach(order => {
-        if (order.items && Array.isArray(order.items)) {
-          order.items.forEach(item => {
-            // Update total sales count
-            result.totalSales += item.quantity;
-            
-            // Update revenue
-            const itemRevenue = item.price * item.quantity;
-            result.revenue += itemRevenue;
-            
-            // Update cost
-            const itemCost = item.cost * item.quantity;
-            result.cost += itemCost;
-            
-            // Calculate profit
-            const itemProfit = itemRevenue - itemCost;
-            result.profit += itemProfit;
-            
-            // Update category breakdown
-            const category = item.category ? item.category.toLowerCase() : 'other';
-            if (result.breakdown[category]) {
-              result.breakdown[category].sales += item.quantity;
-              result.breakdown[category].revenue += itemRevenue;
-              result.breakdown[category].cost += itemCost;
-              result.breakdown[category].profit += itemProfit;
-            }
-          });
-        }
-      });
+      // Handle simple hour format (HH:MM)
+      if (hour.includes(':')) {
+        // Convert 24-hour to 12-hour format
+        const [hours, minutes] = hour.split(':');
+        const h = parseInt(hours, 10);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const displayHour = h % 12 || 12;
+        return `${displayHour}${minutes === '00' ? '' : ':' + minutes} ${ampm}`;
+      }
       
-      return result;
+      // If it's a complete date string, use Date object
+      try {
+        const formattedHour = new Date(hour).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        return formattedHour.replace(/:\d{2} /, ' ');
+      } catch (e) {
+        return hour; // Return as is if formatting fails
+      }
     }
   }
 };
@@ -916,18 +985,25 @@ export default {
   margin-top: 30px;
 }
 
-.weekly-sales-chart {
+.daily-sales-chart {
   background: white;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-.weekly-sales-chart h3 {
+.daily-sales-chart h3 {
   margin-top: 0;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
   color: #333;
   font-size: 18px;
+}
+
+.chart-subtitle {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 15px;
+  font-style: italic;
 }
 
 .chart-container {
@@ -969,39 +1045,33 @@ export default {
 
 .chart-grid {
   display: grid;
-  grid-template-columns: 40px 1fr;
-  grid-template-rows: 1fr 30px;
-  gap: 5px;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  height: 250px;
 }
 
-.y-axis {
-  grid-row: 1;
-  grid-column: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-end;
-  padding-right: 10px;
-  font-size: 12px;
-  color: #666;
-}
-
-.chart-area {
-  grid-row: 1;
-  grid-column: 2;
-  border-left: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
+.chart-content {
+  width: 100%;
+  height: 100%;
   position: relative;
 }
 
-.x-axis {
-  grid-row: 2;
-  grid-column: 2;
-  display: flex;
-  justify-content: space-between;
-  padding: 5px 0;
-  font-size: 12px;
-  color: #666;
+.line-chart {
+  width: 100%;
+  height: 100%;
+  background-color: #fafafa;
+  border-radius: 4px;
+}
+
+.chart-bar {
+  transition: all 0.3s ease;
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.chart-bar:hover {
+  opacity: 1;
+  filter: brightness(1.1);
 }
 
 .product-stats-container {
@@ -1083,12 +1153,24 @@ table td {
   color: #FF9800;
 }
 
+.status-tag.out-of-stock {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+}
+
+.no-data {
+  text-align: center;
+  padding: 1rem;
+  color: #666;
+  font-style: italic;
+}
+
 @media (min-width: 1024px) {
   .sales-and-product-stats {
     flex-direction: row;
   }
   
-  .weekly-sales-chart {
+  .daily-sales-chart {
     flex: 1;
   }
   

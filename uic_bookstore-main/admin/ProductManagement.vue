@@ -78,89 +78,92 @@
     
     <!-- Product Modal (Add/Edit) -->
     <div class="modal" v-if="showProductModal">
-      <div class="modal-content">
+      <div class="modal-content product-form-modal">
         <div class="modal-header">
-          <h3>{{ isEditing ? 'Edit Product' : 'Add New Product' }}</h3>
+          <h3>{{ isEditing ? 'Edit Product' : 'New Product' }}</h3>
           <button class="close-btn" @click="closeProductModal">&times;</button>
         </div>
         <div class="modal-body">
-          <form @submit.prevent="saveProduct" class="product-form">
-            <div class="form-group">
-              <label for="name">Product Name</label>
-              <input type="text" id="name" v-model="productForm.name" required>
-            </div>
-            
-            <div class="form-group">
-              <label for="category">Category</label>
-              <select id="category" v-model="productForm.category" required>
-                <option value="Uniform">Uniform</option>
-                <option value="Books">Books</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            
-            <!-- Size field for Uniform category -->
-            <div class="form-group" v-if="productForm.category === 'Uniform'">
-              <label for="size">Size</label>
-              <select id="size" v-model="productForm.size">
-                <option value="">Not Specified</option>
-                <option value="XS">Extra Small (XS)</option>
-                <option value="S">Small (S)</option>
-                <option value="M">Medium (M)</option>
-                <option value="L">Large (L)</option>
-                <option value="XL">Extra Large (XL)</option>
-                <option value="XXL">Double XL (XXL)</option>
-              </select>
-            </div>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label for="price">Price (₱)</label>
-                <input type="number" id="price" v-model="productForm.price" step="0.01" min="0" required>
-              </div>
-              
-              <div class="form-group">
-                <label for="stock">Stock</label>
-                <input type="number" id="stock" v-model="productForm.stock" min="0" required disabled>
-                <small class="form-hint">Stock can only be adjusted in Stock Management</small>
-              </div>
-              
-              <div class="form-group">
-                <label for="min_stock">Min Stock</label>
-                <input type="number" id="min_stock" v-model="productForm.min_stock" min="0">
-              </div>
-            </div>
-            
-            <div class="form-group">
-              <label for="description">Description</label>
-              <textarea id="description" v-model="productForm.description" rows="3"></textarea>
-            </div>
-            
-            <div class="form-group">
-              <label>Product Image</label>
-              <div class="image-upload">
-                <div class="preview-container">
-                  <img v-if="imagePreview" :src="imagePreview" alt="Product Preview" class="image-preview">
-                  <div v-else class="no-preview">No image selected</div>
+          <form @submit.prevent="confirmSaveProduct" class="product-form">
+            <div class="form-layout">
+              <div class="image-section">
+                <div class="image-upload-container" @click="triggerFileInput">
+                  <div class="preview-container">
+                    <img v-if="imagePreview" :src="imagePreview" alt="Product Preview" class="image-preview">
+                    <div v-else class="upload-placeholder">
+                      <div class="upload-text">
+                        Drag image here<br>or<br>
+                        <span class="browse-link">Browse image</span>
+                      </div>
+                    </div>
+                  </div>
+                  <input type="file" id="image" @change="handleImageChange" accept="image/*" ref="fileInput" class="hidden-file-input">
                 </div>
-                <div class="file-input-container">
-                  <input type="file" id="image" @change="handleImageChange" accept="image/*" ref="fileInput">
-                  <label for="image" class="file-input-label">Choose File</label>
-                  <span class="file-name">{{ imageFileName || 'No file chosen' }}</span>
+              </div>
+              
+              <div class="form-fields">
+                <div class="form-group">
+                  <label for="name">Product Name</label>
+                  <input type="text" id="name" v-model="productForm.name" required placeholder="Enter product name">
+                </div>
+                
+                <div class="form-group">
+                  <label for="category">Category</label>
+                  <select id="category" v-model="productForm.category" required placeholder="Select product category">
+                    <option value="" disabled selected>Select product category</option>
+                    <option value="Uniform">Uniform</option>
+                    <option value="Books">Books</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                
+                <!-- Size field for Uniform category -->
+                <div class="form-group" v-if="productForm.category === 'Uniform'">
+                  <label for="size">Size</label>
+                  <select id="size" v-model="productForm.size" placeholder="Select size">
+                    <option value="">Not Specified</option>
+                    <option value="XS">Extra Small (XS)</option>
+                    <option value="S">Small (S)</option>
+                    <option value="M">Medium (M)</option>
+                    <option value="L">Large (L)</option>
+                    <option value="XL">Extra Large (XL)</option>
+                    <option value="XXL">Double XL (XXL)</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="cost_price">Buying Price (₱)</label>
+                  <input type="number" id="cost_price" v-model="productForm.cost_price" step="0.01" min="0" required placeholder="Enter buying price">
+                </div>
+                
+                <div class="form-group">
+                  <label for="price">Selling Price (₱)</label>
+                  <input type="number" id="price" v-model="productForm.price" step="0.01" min="0" required placeholder="Enter selling price">
+                </div>
+                
+                <div class="form-group">
+                  <label for="stock">Quantity</label>
+                  <input type="number" id="stock" v-model="productForm.stock" min="0" required disabled placeholder="Enter product quantity">
+                  <small class="form-hint">Stock can only be adjusted in Stock Management</small>
+                </div>
+                
+                <div class="form-group">
+                  <label for="min_stock">Threshold Value</label>
+                  <input type="number" id="min_stock" v-model="productForm.min_stock" min="0" placeholder="Enter threshold value">
+                </div>
+                
+                <div class="form-group">
+                  <label for="description">Description</label>
+                  <textarea id="description" v-model="productForm.description" rows="3" placeholder="Enter product description"></textarea>
                 </div>
               </div>
             </div>
             
             <div class="form-actions">
-              <button type="button" class="cancel-btn" @click="closeProductModal">Cancel</button>
+              <button type="button" class="cancel-btn" @click="closeProductModal">Discard</button>
               <button type="submit" class="save-btn" :disabled="isLoading">
-                {{ isLoading ? 'Saving...' : 'Save Product' }}
+                {{ isLoading ? 'Saving...' : (isEditing ? 'Save Changes' : 'Add Product') }}
               </button>
-            </div>
-            
-            <div v-if="isEditing" class="notification-hint">
-              <i class="fas fa-bell"></i>
-              <span>Students subscribed to this product will be notified of any changes.</span>
             </div>
             
             <div v-if="error" class="error-message">{{ error }}</div>
@@ -170,9 +173,104 @@
       </div>
     </div>
     
+    <!-- Confirmation Modal -->
+    <div class="modal" v-if="showConfirmationModal">
+      <div class="modal-content confirmation-modal">
+        <div class="modal-header">
+          <h3>Confirm Changes</h3>
+          <button class="close-btn" @click="closeConfirmationModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to {{ isEditing ? 'update' : 'add' }} this product?</p>
+          
+          <div class="confirmation-details">
+            <p><strong>Product:</strong> {{ productForm.name }}</p>
+            <p><strong>Category:</strong> {{ productForm.category }}</p>
+            <p v-if="productForm.category === 'Uniform' && productForm.size"><strong>Size:</strong> {{ productForm.size }}</p>
+            <p><strong>Selling Price:</strong> ₱{{ productForm.price }}</p>
+          </div>
+          
+          <div class="form-actions">
+            <button class="cancel-btn" @click="closeConfirmationModal">Cancel</button>
+            <button class="confirm-btn" @click="saveProduct" :disabled="isLoading">
+              {{ isLoading ? 'Saving...' : 'Confirm' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- View Product Modal -->
+    <div class="modal" v-if="showViewModal">
+      <div class="modal-content view-modal-content">
+        <div class="modal-header view-modal-header">
+          <h3>{{ productToView.name }}</h3>
+          <button class="close-btn" @click="closeViewModal">×</button>
+        </div>
+        <div class="modal-body product-details-view">
+          <div class="product-view-info">
+            <h4 class="section-title">Primary Details</h4>
+            
+            <div class="detail-row">
+              <div class="detail-label">Product name</div>
+              <div class="detail-value">{{ productToView.name }}</div>
+            </div>
+            
+            <div class="detail-row">
+              <div class="detail-label">Product category</div>
+              <div class="detail-value">
+                <span :class="'category-badge ' + productToView.category?.toLowerCase()">
+                  {{ productToView.category }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="detail-row" v-if="productToView.category === 'Uniform' && productToView.size">
+              <div class="detail-label">Size</div>
+              <div class="detail-value">{{ productToView.size }}</div>
+            </div>
+            
+            <div class="detail-row">
+              <div class="detail-label">Selling Price</div>
+              <div class="detail-value">₱ {{ productToView.price }}</div>
+            </div>
+            
+            <div class="detail-row">
+              <div class="detail-label">Cost Price</div>
+              <div class="detail-value">₱ {{ productToView.cost_price }}</div>
+            </div>
+            
+            <div class="detail-row">
+              <div class="detail-label">Current Stock</div>
+              <div class="detail-value" :class="{ 'low-stock': isLowStock(productToView) }">
+                {{ productToView.stock }}
+              </div>
+            </div>
+            
+            <div class="detail-row">
+              <div class="detail-label">Minimum Stock</div>
+              <div class="detail-value">{{ productToView.min_stock }}</div>
+            </div>
+          </div>
+          
+          <div class="product-view-image-container">
+            <div class="product-view-image">
+              <img v-if="productToView.image_url" :src="getImageUrl(productToView.image_url)" alt="Product Image">
+              <div v-else class="no-image-view">No Image Available</div>
+            </div>
+            
+            <div class="description-section">
+              <h4 class="section-title">Description</h4>
+              <p class="product-description">{{ productToView.description || 'No description available' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
     <!-- Delete Confirmation Modal -->
     <div class="modal" v-if="showDeleteModal">
-      <div class="modal-content delete-modal">
+      <div class="modal-content confirmation-modal">
         <div class="modal-header">
           <h3>Confirm Delete</h3>
           <button class="close-btn" @click="showDeleteModal = false">&times;</button>
@@ -183,7 +281,7 @@
           
           <div class="form-actions">
             <button class="cancel-btn" @click="showDeleteModal = false">Cancel</button>
-            <button class="delete-confirm-btn" @click="deleteProduct" :disabled="isLoading">
+            <button class="confirm-btn delete" @click="deleteProduct" :disabled="isLoading">
               {{ isLoading ? 'Deleting...' : 'Delete Product' }}
             </button>
           </div>
@@ -206,12 +304,15 @@ export default {
       selectedCategory: 'all',
       showProductModal: false,
       showDeleteModal: false,
+      showViewModal: false,
+      showConfirmationModal: false,
       isEditing: false,
       productForm: {
         id: null,
         name: '',
         category: 'Uniform',
         price: 0,
+        cost_price: 0,
         stock: 0,
         min_stock: null,
         description: '',
@@ -219,6 +320,7 @@ export default {
         size: ''
       },
       productToDelete: null,
+      productToView: null,
       isLoading: false,
       error: null,
       successMessage: null,
@@ -284,6 +386,7 @@ export default {
         name: product.name,
         category: product.category,
         price: product.price,
+        cost_price: product.cost_price,
         stock: product.stock,
         min_stock: product.min_stock,
         description: product.description,
@@ -300,8 +403,8 @@ export default {
     },
     
     viewProduct(product) {
-      // Open view-only modal or navigate to product details
-      this.editProduct(product); // For now, just open in edit mode
+      this.productToView = product;
+      this.showViewModal = true;
     },
     
     confirmDelete(product) {
@@ -315,6 +418,7 @@ export default {
         name: '',
         category: 'Uniform',
         price: 0,
+        cost_price: 0,
         stock: 0,
         min_stock: null,
         description: '',
@@ -375,6 +479,7 @@ export default {
         formData.append('name', this.productForm.name);
         formData.append('category', this.productForm.category);
         formData.append('price', this.productForm.price);
+        formData.append('cost_price', this.productForm.cost_price);
         formData.append('stock', this.productForm.stock);
         
         if (this.productForm.min_stock !== null && this.productForm.min_stock !== '') {
@@ -423,10 +528,13 @@ export default {
         // Show success message
         this.successMessage = `Product ${this.isEditing ? 'updated' : 'created'} successfully!`;
         
-        // Close modal after delay
+        // Close confirmation modal immediately
+        this.closeConfirmationModal();
+        
+        // Close product modal after delay
         setTimeout(() => {
           this.closeProductModal();
-        }, 1500);
+        }, 500);
       } catch (error) {
         this.error = error.message || 'Failed to save product. Please try again.';
       } finally {
@@ -474,6 +582,51 @@ export default {
     
     isLowStock(product) {
       return product.min_stock !== null && product.stock <= product.min_stock;
+    },
+    
+    editFromView(product) {
+      this.isEditing = true;
+      this.resetForm();
+      
+      // Copy product data to form
+      this.productForm = {
+        id: product.id,
+        name: product.name,
+        category: product.category,
+        price: product.price,
+        cost_price: product.cost_price,
+        stock: product.stock,
+        min_stock: product.min_stock,
+        description: product.description,
+        image_url: product.image_url,
+        size: product.size
+      };
+      
+      // Set image preview if available
+      if (product.image_url) {
+        this.imagePreview = this.getImageUrl(product.image_url);
+      }
+      
+      this.showProductModal = true;
+    },
+    
+    closeViewModal() {
+      this.showViewModal = false;
+      this.productToView = null;
+    },
+    
+    confirmSaveProduct() {
+      this.showConfirmationModal = true;
+    },
+    
+    closeConfirmationModal() {
+      this.showConfirmationModal = false;
+    },
+    
+    triggerFileInput() {
+      if (this.$refs.fileInput) {
+        this.$refs.fileInput.click();
+      }
     }
   }
 };
@@ -539,6 +692,7 @@ export default {
   width: 180px;
 }
 
+/* Table styles */
 .products-table {
   background-color: white;
   border-radius: 8px;
@@ -599,6 +753,7 @@ tr:last-child {
   text-align: center;
 }
 
+/* Category badges */
 .category-badge {
   padding: 0.2rem 0.5rem;
   border-radius: 12px;
@@ -621,6 +776,7 @@ tr:last-child {
   color: #616161;
 }
 
+/* Stock styling */
 .low-stock {
   color: #e53935;
   position: relative;
@@ -644,6 +800,7 @@ tr:last-child {
   display: block;
 }
 
+/* Action buttons */
 .actions-cell {
   display: flex;
   gap: 0.5rem;
@@ -699,10 +856,6 @@ tr:last-child {
   overflow-y: auto;
 }
 
-.delete-modal {
-  max-width: 400px;
-}
-
 .modal-header {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #f0f0f0;
@@ -727,21 +880,33 @@ tr:last-child {
 
 .modal-body {
   padding: 1.5rem;
+  overflow-y: auto;
+  max-height: calc(80vh - 60px); /* 60px accounts for the modal header */
 }
 
-.product-form .form-group {
-  margin-bottom: 1rem;
+/* Product Form Styles */
+.product-form-modal {
+  max-width: 700px;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.form-row {
+.form-layout {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
 }
 
-.form-row .form-group {
+.image-section {
+  flex: 0 0 200px;
+}
+
+.form-fields {
   flex: 1;
-  margin-bottom: 0;
+}
+
+.form-group {
+  margin-bottom: 1rem;
 }
 
 label {
@@ -753,31 +918,52 @@ label {
 
 input, select, textarea {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.75rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  color: #333;
+  background-color: white;
+}
+
+input::placeholder, select::placeholder, textarea::placeholder {
+  color: #aaa;
 }
 
 textarea {
   resize: vertical;
 }
 
-.image-upload {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.form-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: #777;
+  margin-top: 0.25rem;
 }
 
-.preview-container {
+/* Image upload */
+.image-upload-container {
   width: 100%;
-  height: 150px;
+  height: 200px;
   border: 1px dashed #ccc;
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.image-upload-container:hover {
+  background-color: #f9f9f9;
+}
+
+.preview-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .image-preview {
@@ -786,36 +972,28 @@ textarea {
   object-fit: contain;
 }
 
-.no-preview {
+.upload-placeholder {
   color: #999;
+  text-align: center;
+  padding: 1rem;
 }
 
-.file-input-container {
-  display: flex;
-  align-items: center;
+.upload-text {
+  font-size: 0.9rem;
+  text-align: center;
+  line-height: 1.6;
 }
 
-input[type="file"] {
+.browse-link {
+  color: #0066cc;
+  font-weight: 500;
+}
+
+.hidden-file-input {
   display: none;
 }
 
-.file-input-label {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  background-color: #f0f0f0;
-  color: #333;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-right: 1rem;
-}
-
-.file-name {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
+/* Form actions */
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -823,7 +1001,7 @@ input[type="file"] {
   margin-top: 1.5rem;
 }
 
-.cancel-btn, .save-btn, .delete-confirm-btn {
+.cancel-btn, .save-btn, .confirm-btn {
   padding: 0.5rem 1rem;
   border-radius: 4px;
   border: none;
@@ -836,16 +1014,16 @@ input[type="file"] {
   color: #333;
 }
 
-.save-btn {
+.save-btn, .confirm-btn {
   background-color: #0066cc;
   color: white;
 }
 
-.delete-confirm-btn {
+.confirm-btn.delete {
   background-color: #e53935;
-  color: white;
 }
 
+/* Messages */
 .error-message {
   margin-top: 1rem;
   color: #e53935;
@@ -867,31 +1045,136 @@ input[type="file"] {
   font-style: italic;
 }
 
-.form-hint {
-  display: block;
-  font-size: 0.75rem;
+/* View product modal */
+.view-modal-content {
+  max-width: 700px;
+}
+
+.view-modal-header {
+  background-color: white;
+  border-bottom: 1px solid #eee;
+}
+
+.view-modal-header h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.product-details-view {
+  display: flex;
+  gap: 2rem;
+  padding: 0;
+}
+
+.product-view-info {
+  flex: 1;
+  padding: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.detail-row {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.detail-label {
+  font-weight: 400;
   color: #666;
-  margin-top: 0.25rem;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+  width: auto;
+}
+
+.detail-value {
+  font-weight: 500;
+  color: #333;
+  font-size: 1rem;
+}
+
+.product-view-image-container {
+  flex: 1;
+  padding: 1.5rem 1.5rem 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-view-image {
+  width: 100%;
+  height: 200px;
+  border: 1px dashed #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-view-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.no-image-view {
+  color: #999;
+  text-align: center;
+  font-size: 0.9rem;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9f9f9;
+}
+
+.description-section {
+  margin-top: 1rem;
+}
+
+.product-description {
+  color: #666;
+  font-size: 0.95rem;
+  white-space: pre-wrap;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+
+/* Confirmation modal */
+.confirmation-modal {
+  max-width: 400px;
+}
+
+.confirmation-details {
+  background-color: #f9f9f9;
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+}
+
+.confirmation-details p {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.confirmation-details strong {
+  font-weight: 600;
 }
 
 .size-indicator {
   font-size: 0.8rem;
   color: #666;
   margin-left: 0.5rem;
-}
-
-.notification-hint {
-  margin-top: 1rem;
-  color: #666;
-  background-color: #f0f0f0;
-  padding: 0.5rem;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.notification-hint i {
-  color: #0066cc;
 }
 </style> 

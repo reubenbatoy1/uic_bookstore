@@ -303,7 +303,7 @@ export default {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #f0f0f0;
+  background-color: #FFE4E1; /* Misty rose */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -313,14 +313,14 @@ export default {
 
 .notification-icon i {
   font-size: 1.2rem;
-  color: #555;
+  color: #FF1493; /* Deep pink */
 }
 
 .notification-badge {
   position: absolute;
   top: 0;
   right: 0;
-  background-color: #e53935;
+  background-color: #FF1493; /* Deep pink */
   color: white;
   font-size: 0.7rem;
   width: 18px;
@@ -367,7 +367,7 @@ export default {
 .mark-all-read {
   background: none;
   border: none;
-  color: #0066cc;
+  color: #FF1493; /* Deep pink */
   font-size: 0.8rem;
   cursor: pointer;
   margin-right: 1rem;
@@ -402,14 +402,14 @@ export default {
 }
 
 .notification-item.unread {
-  background-color: #f5f9ff;
+  background-color: #FFF0F5; /* Lavender blush */
 }
 
 .notification-icon-container {
   margin-right: 0.75rem;
   width: 30px;
   height: 30px;
-  background-color: #f0f0f0;
+  background-color: #FFE4E1; /* Misty rose */
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -418,7 +418,7 @@ export default {
 
 .notification-icon-container i {
   font-size: 0.9rem;
-  color: #555;
+  color: #FF1493; /* Deep pink */
 }
 
 .notification-content {
@@ -462,8 +462,8 @@ export default {
 
 .load-more button {
   background-color: transparent;
-  border: 1px solid #ddd;
-  color: #666;
+  border: 1px solid #FFB6C1; /* Light pink */
+  color: #FF1493; /* Deep pink */
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
@@ -484,8 +484,8 @@ export default {
 }
 
 .loading-spinner {
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #0066cc;
+  border: 3px solid #FFE4E1; /* Misty rose */
+  border-top: 3px solid #FF1493; /* Deep pink */
   border-radius: 50%;
   width: 24px;
   height: 24px;

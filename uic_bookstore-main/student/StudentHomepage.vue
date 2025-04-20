@@ -282,20 +282,20 @@ export default {
 }
 
 .header {
-  background-color: white;
+  background-color: #FFF0F5; /* Lavender blush */
   color: black;
   padding: 0.75rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #FFB6C1; /* Light pink */
 }
 
 .logo h1 {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #333;
+  color: #FF1493; /* Deep pink */
 }
 
 .header-right {
@@ -306,7 +306,7 @@ export default {
 .notification-icon {
   margin-right: 1.5rem;
   font-size: 1.2rem;
-  color: #444;
+  color: #FF1493; /* Deep pink */
   cursor: pointer;
 }
 
@@ -324,7 +324,7 @@ export default {
 }
 
 .user-info:hover {
-  background-color: #f5f5f5;
+  background-color: #FFE4E1; /* Misty rose */
 }
 
 .profile-picture {
@@ -332,7 +332,7 @@ export default {
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #f0f0f0;
+  border: 2px solid #FFB6C1; /* Light pink */
 }
 
 .username {
@@ -362,13 +362,13 @@ export default {
 .dropdown-menu li a {
   display: block;
   padding: 0.75rem 1rem;
-  color: #333;
+  color: #FF1493; /* Deep pink */
   text-decoration: none;
   transition: background-color 0.3s;
 }
 
 .dropdown-menu li a:hover {
-  background-color: #f5f5f5;
+  background-color: #FFE4E1; /* Misty rose */
 }
 
 .main-content {
@@ -492,7 +492,7 @@ export default {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 183, 197, 0.7); /* Light pink with opacity */
   border: none;
   width: 40px;
   height: 40px;
@@ -504,11 +504,12 @@ export default {
   opacity: 0.8;
   transition: opacity 0.3s;
   z-index: 2;
+  color: #FF1493; /* Deep pink */
 }
 
 .carousel-control:hover {
   opacity: 1;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 183, 197, 0.9); /* Light pink with higher opacity */
 }
 
 .carousel-control.prev {
@@ -539,7 +540,7 @@ export default {
 }
 
 .carousel-indicators span.active {
-  background-color: white;
+  background-color: #FF1493; /* Deep pink */
   transform: scale(1.2);
 }
 

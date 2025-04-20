@@ -38,6 +38,7 @@ class ProductBase(BaseModel):
     name: str
     category: str
     price: Decimal
+    cost_price: Decimal
     stock: int
     min_stock: Optional[int] = None
     description: Optional[str] = None
@@ -51,6 +52,7 @@ class ProductUpdate(BaseModel):
     name: Optional[str] = None
     category: Optional[str] = None
     price: Optional[Decimal] = None
+    cost_price: Optional[Decimal] = None
     stock: Optional[int] = None
     min_stock: Optional[int] = None
     description: Optional[str] = None
@@ -219,6 +221,7 @@ class LowStockProduct(BaseModel):
     current_stock: int
     min_stock: int
     price: float
+    status: str = Field(description="Stock status: 'Out of Stock' or 'Low Stock'")
 
 class CategoryPerformanceResponse(BaseModel):
     categories: Dict[str, Dict[str, Union[int, float]]]

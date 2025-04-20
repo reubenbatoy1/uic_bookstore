@@ -39,7 +39,12 @@
     </div>
 
     <div v-else class="feedback-list">
-      <div v-for="feedback in filteredFeedback" :key="feedback.id" class="feedback-card">
+      <div 
+        v-for="feedback in filteredFeedback" 
+        :key="feedback.id" 
+        class="feedback-card"
+        :class="{ 'highlighted': highlightFeedbackId === feedback.id }"
+      >
         <div class="feedback-header">
           <div class="feedback-meta">
             <span class="feedback-date">{{ formatDate(feedback.created_at) }}</span>
@@ -130,7 +135,8 @@ export default {
       currentPage: 1,
       itemsPerPage: 10,
       showNotesModal: false,
-      selectedFeedback: null
+      selectedFeedback: null,
+      highlightFeedbackId: null
     }
   },
   computed: {
@@ -168,6 +174,24 @@ export default {
   },
   created() {
     this.loadFeedback();
+    
+    // Check if we were directed here from a notification
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('highlight')) {
+      this.highlightFeedbackId = parseInt(params.get('highlight'));
+    }
+  },
+  mounted() {
+    // If we have a highlighted feedback, scroll to it
+    this.$nextTick(() => {
+      this.scrollToHighlightedFeedback();
+    });
+  },
+  updated() {
+    // If we have a highlighted feedback, scroll to it after update
+    this.$nextTick(() => {
+      this.scrollToHighlightedFeedback();
+    });
   },
   methods: {
     async loadFeedback() {
@@ -182,7 +206,8 @@ export default {
         }
         
         const data = await response.json();
-        this.feedbackList = data;
+        // Sort feedback by created_at date in descending order (newest first)
+        this.feedbackList = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         
         // Reset to page 1 when reloading data
         this.currentPage = 1;
@@ -271,6 +296,19 @@ export default {
         this.closeNotesModal();
       } catch (error) {
         alert(`Error saving notes: ${error.message}`);
+      }
+    },
+    scrollToHighlightedFeedback() {
+      if (this.highlightFeedbackId) {
+        const highlightedElement = document.querySelector(`.feedback-card.highlighted`);
+        if (highlightedElement) {
+          highlightedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          // Clear highlight after 5 seconds
+          setTimeout(() => {
+            this.highlightFeedbackId = null;
+          }, 5000);
+        }
       }
     }
   }
@@ -601,5 +639,20 @@ export default {
 .save-button {
   background-color: #ff4b7d;
   color: white;
+}
+
+.feedback-card.highlighted {
+  border: 2px solid #ff4b7d;
+  background-color: #fff5f7;
+  animation: highlight-pulse 2s infinite alternate;
+}
+
+@keyframes highlight-pulse {
+  from {
+    box-shadow: 0 0 5px rgba(255, 75, 125, 0.5);
+  }
+  to {
+    box-shadow: 0 0 15px rgba(255, 75, 125, 0.8);
+  }
 }
 </style> 

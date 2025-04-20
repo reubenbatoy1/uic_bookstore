@@ -79,10 +79,9 @@
             
             <div class="form-group">
               <label for="adjustmentType">Type</label>
-              <select id="adjustmentType" v-model="adjustment.type" required>
+              <select id="adjustmentType" v-model="adjustment.type" required @change="handleTypeChange">
                 <option value="add">Add Stock</option>
                 <option value="remove">Remove Stock</option>
-                <option value="set">Set Stock</option>
               </select>
             </div>
             
@@ -101,12 +100,18 @@
               <label for="reason">Reason</label>
               <select id="reason" v-model="adjustment.reason" required>
                 <option value="">Select reason</option>
-                <option value="purchase">New Purchase</option>
-                <option value="return">Customer Return</option>
-                <option value="damage">Damaged Items</option>
-                <option value="inventory">Inventory Correction</option>
-                <option value="sale">Sale</option>
-                <option value="other">Other</option>
+                <template v-if="adjustment.type === 'add'">
+                  <option value="purchase">New Purchase</option>
+                  <option value="return">Customer Return</option>
+                  <option value="inventory">Inventory Correction</option>
+                  <option value="other">Other</option>
+                </template>
+                <template v-else-if="adjustment.type === 'remove'">
+                  <option value="sale">Sale</option>
+                  <option value="damage">Damaged Items</option>
+                  <option value="inventory">Inventory Correction</option>
+                  <option value="other">Other</option>
+                </template>
               </select>
             </div>
             
@@ -186,6 +191,53 @@
         </div>
       </div>
     </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" v-if="showConfirmationModal">
+      <div class="modal-content confirmation-modal">
+        <div class="modal-header">
+          <h3>Confirm Stock Adjustment</h3>
+          <button class="close-btn" @click="closeConfirmationModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="confirmation-details">
+            <p class="confirmation-message">Are you sure you want to make the following adjustment?</p>
+            
+            <div class="confirmation-info">
+              <div class="info-row">
+                <span class="info-label">Product:</span>
+                <span class="info-value">{{ getProductName(adjustment.productId) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Type:</span>
+                <span class="info-value" :class="adjustment.type === 'add' ? 'type-add' : 'type-remove'">
+                  {{ adjustment.type === 'add' ? 'Add Stock' : 'Remove Stock' }}
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Quantity:</span>
+                <span class="info-value">{{ adjustment.quantity }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Reason:</span>
+                <span class="info-value">{{ getReasonLabel(adjustment.reason) }}</span>
+              </div>
+              <div class="info-row" v-if="adjustment.notes">
+                <span class="info-label">Notes:</span>
+                <span class="info-value">{{ adjustment.notes }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="confirmation-actions">
+            <button class="cancel-btn" @click="closeConfirmationModal">Cancel</button>
+            <button class="confirm-btn" @click="proceedWithSave" :disabled="isLoading">
+              {{ isLoading ? 'Saving...' : 'Confirm' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -211,7 +263,8 @@ export default {
       stockHistory: [],
       isLoading: false,
       isLoadingHistory: false,
-      error: null
+      error: null,
+      showConfirmationModal: false
     };
   },
   created() {
@@ -281,6 +334,11 @@ export default {
       }
     },
     
+    handleTypeChange() {
+      // Reset reason when type changes
+      this.adjustment.reason = '';
+    },
+    
     openStockAdjustmentModal(product, type = 'add') {
       this.selectedProduct = product;
       
@@ -303,11 +361,24 @@ export default {
     },
     
     async saveStockAdjustment() {
+      // Show confirmation modal instead of saving directly
+      this.showConfirmationModal = true;
+    },
+    
+    closeConfirmationModal() {
+      this.showConfirmationModal = false;
+    },
+    
+    getProductName(productId) {
+      const product = this.products.find(p => p.id === productId);
+      return product ? product.name : '';
+    },
+    
+    async proceedWithSave() {
       this.isLoading = true;
       this.error = null;
       
       try {
-        // Ensure quantity is a number
         const adjustmentData = {
           product_id: parseInt(this.adjustment.productId),
           type: this.adjustment.type,
@@ -331,6 +402,7 @@ export default {
         
         // Update products list
         await this.loadProducts();
+        this.closeConfirmationModal();
         this.closeAdjustmentModal();
       } catch (error) {
         this.error = error.message || 'Failed to adjust stock. Please try again.';
@@ -609,6 +681,8 @@ tr:last-child {
 
 .history-modal {
   max-width: 600px;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .modal-header {
@@ -635,6 +709,8 @@ tr:last-child {
 
 .modal-body {
   padding: 1.5rem;
+  overflow-y: auto;
+  max-height: calc(80vh - 60px); /* 60px accounts for the modal header */
 }
 
 .adjustment-form .form-group {
@@ -799,5 +875,86 @@ textarea {
 
 .notification-hint i {
   color: #0066cc;
+}
+
+.confirmation-modal {
+  max-width: 450px;
+}
+
+.confirmation-details {
+  margin-bottom: 1.5rem;
+}
+
+.confirmation-message {
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.confirmation-info {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+}
+
+.info-label {
+  color: #666;
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.info-value {
+  color: #333;
+  font-weight: 500;
+  text-align: right;
+  flex: 1;
+  margin-left: 1rem;
+}
+
+.confirmation-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.confirm-btn {
+  background-color: #FF9DAE;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.confirm-btn:hover {
+  background-color: #ff89a0;
+}
+
+.confirm-btn:disabled {
+  background-color: #ffbfc9;
+  cursor: not-allowed;
+}
+
+.type-add {
+  color: #2e7d32;
+}
+
+.type-remove {
+  color: #c62828;
 }
 </style> 
