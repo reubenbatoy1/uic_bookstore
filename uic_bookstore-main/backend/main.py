@@ -12,6 +12,8 @@ from sqlalchemy import func, and_, text
 from decimal import Decimal
 from passlib.context import CryptContext
 import time
+import csv
+from io import StringIO
 
 import models
 import schemas
@@ -180,6 +182,33 @@ async def update_profile(
     print(f"Profile updated successfully for {student.name}")
     return student
 
+@app.put("/students/change-password", response_model=dict)
+async def change_student_password(
+    password_data: dict,
+    db: Session = Depends(get_db)
+):
+    student_id = password_data.get("student_id")
+    current_password = password_data.get("current_password")
+    new_password = password_data.get("new_password")
+    
+    if not student_id or not current_password or not new_password:
+        raise HTTPException(status_code=400, detail="Missing required fields")
+    
+    # Get student from database
+    student = db.query(models.Student).filter(models.Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Verify current password
+    if not auth.verify_password(current_password, student.password_hash):
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+    
+    # Update password
+    student.password_hash = auth.get_password_hash(new_password)
+    db.commit()
+    
+    return {"message": "Password changed successfully"}
+
 # Product management endpoints
 @app.get("/products", response_model=schemas.ProductList)
 def get_products(
@@ -216,6 +245,7 @@ async def create_product(
     name: str = Form(...),
     category: str = Form(...),
     price: float = Form(...),
+    cost_price: float = Form(...),
     stock: int = Form(...),
     min_stock: Optional[int] = Form(None),
     description: Optional[str] = Form(None),
@@ -228,6 +258,7 @@ async def create_product(
         name=name,
         category=category,
         price=price,
+        cost_price=cost_price,
         stock=stock,
         min_stock=min_stock,
         description=description,
@@ -268,6 +299,7 @@ async def update_product(
     name: Optional[str] = Form(None),
     category: Optional[str] = Form(None),
     price: Optional[float] = Form(None),
+    cost_price: Optional[float] = Form(None),
     stock: Optional[int] = Form(None),
     min_stock: Optional[int] = Form(None),
     description: Optional[str] = Form(None),
@@ -294,6 +326,9 @@ async def update_product(
     if price is not None and float(price) != float(product.price):
         changes.append(f"Price updated from ₱{product.price} to ₱{price}")
         product.price = price
+    if cost_price is not None and float(cost_price) != float(product.cost_price):
+        changes.append(f"Cost price updated from ₱{product.cost_price} to ₱{cost_price}")
+        product.cost_price = cost_price
     if stock is not None and stock != product.stock:
         changes.append(f"Stock updated from {product.stock} to {stock}")
         product.stock = stock
@@ -836,6 +871,111 @@ def delete_order(order_id: int, db: Session = Depends(get_db)):
     
     return None
 
+@app.post("/admin/orders/import")
+async def import_orders(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    """Import orders from a CSV file"""
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="Only CSV files are allowed")
+    
+    try:
+        # Read the CSV file
+        contents = await file.read()
+        csv_text = contents.decode('utf-8')
+        csv_reader = csv.DictReader(StringIO(csv_text))
+        
+        # Validate CSV headers
+        required_headers = {'customer_name', 'product_id', 'quantity'}
+        headers = set(csv_reader.fieldnames)
+        if not required_headers.issubset(headers):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"CSV file must contain the following columns: {', '.join(required_headers)}"
+            )
+        
+        # Process each row
+        orders_by_customer = {}
+        for row in csv_reader:
+            customer_name = row['customer_name'].strip()
+            try:
+                product_id = int(row['product_id'])
+                quantity = int(row['quantity'])
+            except ValueError:
+                raise HTTPException(
+                    status_code=400,
+                    detail="product_id and quantity must be valid numbers"
+                )
+                
+            if quantity <= 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Quantity must be greater than 0"
+                )
+                
+            # Get product to check stock and price
+            product = db.query(models.Product).filter(models.Product.id == product_id).first()
+            if not product:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Product with ID {product_id} not found"
+                )
+                
+            if product.stock < quantity:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Not enough stock for product '{product.name}'. Available: {product.stock}, Requested: {quantity}"
+                )
+                
+            # Group items by customer
+            if customer_name not in orders_by_customer:
+                orders_by_customer[customer_name] = []
+            
+            orders_by_customer[customer_name].append({
+                'product_id': product_id,
+                'quantity': quantity,
+                'price': float(product.price)
+            })
+        
+        # Create orders for each customer
+        created_orders = []
+        for customer_name, items in orders_by_customer.items():
+            # Create order
+            new_order = models.Order(
+                customer_name=customer_name,
+                status='Pending'
+            )
+            db.add(new_order)
+            db.flush()  # Get the order ID
+            
+            # Create order items and update stock
+            for item in items:
+                order_item = models.OrderItem(
+                    order_id=new_order.id,
+                    product_id=item['product_id'],
+                    quantity=item['quantity'],
+                    price=item['price']
+                )
+                db.add(order_item)
+                
+                # Update product stock
+                product = db.query(models.Product).filter(models.Product.id == item['product_id']).first()
+                product.stock -= item['quantity']
+            
+            created_orders.append(new_order.id)
+        
+        # Commit all changes
+        db.commit()
+        
+        return {"message": f"Successfully imported {len(created_orders)} orders", "order_ids": created_orders}
+        
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error importing orders: {str(e)}")
+    finally:
+        await file.close()
+
 # Report endpoints
 @app.get("/admin/reports/sales", response_model=schemas.SalesReportResponse)
 def get_sales_report(
@@ -1076,13 +1216,17 @@ def get_low_stock_items(db: Session = Depends(get_db)):
         
         low_stock_items = []
         for row in result:
+            # Determine status based on stock level
+            status = "Out of Stock" if row[3] == 0 else "Low Stock"
+            
             low_stock_items.append({
                 "id": row[0],
                 "name": row[1],
                 "category": row[2],
                 "current_stock": row[3],
                 "min_stock": row[4],
-                "price": float(row[5])
+                "price": float(row[5]),
+                "status": status
             })
             
         return low_stock_items
@@ -1500,6 +1644,86 @@ async def get_weekly_sales(date: str = Query(..., description="Date in YYYY-MM-D
         raise HTTPException(
             status_code=500,
             detail=f"Error fetching weekly sales: {str(e)}"
+        )
+
+@app.get("/admin/dashboard/daily-stats")
+async def get_daily_stats(date: str = Query(..., description="Date in YYYY-MM-DD format"), db: Session = Depends(get_db)):
+    """Get daily statistics from completed orders for the specified date"""
+    try:
+        # Parse the date string
+        order_date = datetime.strptime(date, "%Y-%m-%d").date()
+        
+        # Query for completed orders on the specified date
+        query = """
+            SELECT 
+                p.category,
+                COUNT(DISTINCT o.id) as total_orders,
+                SUM(oi.quantity) as total_quantity,
+                SUM(oi.price * oi.quantity) as total_revenue,
+                SUM(p.cost_price * oi.quantity) as total_cost
+            FROM 
+                orders o
+            JOIN 
+                order_items oi ON o.id = oi.order_id
+            JOIN 
+                products p ON oi.product_id = p.id
+            WHERE 
+                DATE(o.created_at) = :order_date
+                AND o.status = 'Completed'
+            GROUP BY 
+                p.category
+        """
+        
+        result = db.execute(
+            text(query),
+            {"order_date": order_date}
+        )
+        
+        # Initialize statistics
+        stats = {
+            "totalSales": 0,
+            "revenue": 0,
+            "profit": 0,
+            "cost": 0,
+            "breakdown": {
+                "uniform": {"sales": 0, "revenue": 0, "profit": 0, "cost": 0},
+                "books": {"sales": 0, "revenue": 0, "profit": 0, "cost": 0},
+                "other": {"sales": 0, "revenue": 0, "profit": 0, "cost": 0}
+            }
+        }
+        
+        # Process results
+        for row in result:
+            category = row[0].lower()
+            quantity = row[2] or 0
+            revenue = float(row[3] or 0)
+            cost = float(row[4] or 0)
+            profit = revenue - cost
+            
+            # Update category breakdown
+            if category in stats["breakdown"]:
+                stats["breakdown"][category]["sales"] = int(quantity)
+                stats["breakdown"][category]["revenue"] = revenue
+                stats["breakdown"][category]["cost"] = cost
+                stats["breakdown"][category]["profit"] = profit
+            
+            # Update totals
+            stats["totalSales"] += int(quantity)
+            stats["revenue"] += revenue
+            stats["cost"] += cost
+            stats["profit"] += profit
+        
+        return stats
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid date format. Please use YYYY-MM-DD format. Error: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"An error occurred while fetching daily statistics: {str(e)}"
         )
 
 @app.get("/admin/dashboard/top-selling")

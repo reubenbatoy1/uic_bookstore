@@ -17,7 +17,7 @@
     </div>
     
     <div class="reports-grid" v-if="!loading">
-      <!-- Sales Overview Chart - Static SVG instead of Canvas -->
+      <!-- Sales Overview Chart -->
       <div class="report-card">
         <h3>Sales Overview</h3>
         <div class="static-chart">
@@ -37,76 +37,83 @@
           </div>
           <div class="chart-container">
             <div class="chart-y-axis">
-              <div>24</div>
-              <div>20</div>
-              <div>16</div>
-              <div>12</div>
-              <div>8</div>
-              <div>4</div>
-              <div>0</div>
+              <div v-for="value in yAxisValues" :key="value">₱{{ value }}k</div>
             </div>
             <div class="chart-content">
-              <svg viewBox="0 0 500 200" class="line-chart">
-                <!-- Grid lines -->
-                <line x1="0" y1="0" x2="500" y2="0" stroke="#eee" />
-                <line x1="0" y1="33" x2="500" y2="33" stroke="#eee" />
-                <line x1="0" y1="66" x2="500" y2="66" stroke="#eee" />
-                <line x1="0" y1="100" x2="500" y2="100" stroke="#eee" />
-                <line x1="0" y1="133" x2="500" y2="133" stroke="#eee" />
-                <line x1="0" y1="166" x2="500" y2="166" stroke="#eee" />
-                <line x1="0" y1="200" x2="500" y2="200" stroke="#eee" />
-                
-                <!-- Uniform data line -->
-                <polyline 
-                  points="0,183 100,187 200,175 300,183 400,191"
-                  fill="none" 
-                  stroke="#4CAF50" 
-                  stroke-width="2"
-                />
-                
-                <!-- Books data line -->
-                <polyline 
-                  points="0,191 100,191 200,187 300,195 400,187"
-                  fill="none" 
-                  stroke="#2196F3" 
-                  stroke-width="2"
-                />
-                
-                <!-- Other data line -->
-                <polyline 
-                  points="0,100 100,125 200,150 300,166 400,141"
-                  fill="none" 
-                  stroke="#E91E63" 
-                  stroke-width="2"
-                />
-                
-                <!-- Data points -->
-                <circle cx="0" cy="183" r="4" fill="#4CAF50" />
-                <circle cx="100" cy="187" r="4" fill="#4CAF50" />
-                <circle cx="200" cy="175" r="4" fill="#4CAF50" />
-                <circle cx="300" cy="183" r="4" fill="#4CAF50" />
-                <circle cx="400" cy="191" r="4" fill="#4CAF50" />
-                
-                <circle cx="0" cy="191" r="4" fill="#2196F3" />
-                <circle cx="100" cy="191" r="4" fill="#2196F3" />
-                <circle cx="200" cy="187" r="4" fill="#2196F3" />
-                <circle cx="300" cy="195" r="4" fill="#2196F3" />
-                <circle cx="400" cy="187" r="4" fill="#2196F3" />
-                
-                <circle cx="0" cy="100" r="4" fill="#E91E63" />
-                <circle cx="100" cy="125" r="4" fill="#E91E63" />
-                <circle cx="200" cy="150" r="4" fill="#E91E63" />
-                <circle cx="300" cy="166" r="4" fill="#E91E63" />
-                <circle cx="400" cy="141" r="4" fill="#E91E63" />
+              <svg viewBox="0 0 500 200" class="line-chart" @mousemove="handleMouseMove" @mouseleave="hideTooltip">
+                <!-- Background grid -->
+                <g class="grid-lines">
+                  <line v-for="(value, index) in yAxisValues" 
+                        :key="'grid-' + index"
+                        x1="0" 
+                        :y1="index * (200 / (yAxisValues.length - 1))" 
+                        x2="500" 
+                        :y2="index * (200 / (yAxisValues.length - 1))" 
+                        class="grid-line" />
+                </g>
+
+                <!-- Data lines for each category -->
+                <template v-if="salesData && salesData.chart_data">
+                  <g v-for="(dataset, index) in salesData.chart_data.datasets" :key="dataset.label">
+                    <!-- Line -->
+                    <path 
+                      :d="getLinePath(dataset.data)"
+                      :stroke="dataset.borderColor" 
+                      class="data-line"
+                      fill="none" 
+                    />
+                    
+                    <!-- Area under the line -->
+                    <path 
+                      :d="`${getLinePath(dataset.data)} L ${getXPosition(dataset.data.length - 1, dataset.data.length)},200 L ${getXPosition(0, dataset.data.length)},200 Z`"
+                      :fill="dataset.borderColor"
+                      opacity="0.1"
+                    />
+
+                    <!-- Data points -->
+                    <g v-for="(value, pointIndex) in dataset.data" :key="pointIndex">
+                      <circle 
+                        :cx="getXPosition(pointIndex, dataset.data.length)"
+                        :cy="getYPosition(value)"
+                        r="4"
+                        :fill="dataset.backgroundColor"
+                        class="data-point"
+                        @mouseenter="showTooltip($event, dataset.label, value, salesData.chart_data.labels[pointIndex])"
+                      />
+                      <!-- Value label -->
+                      <text 
+                        :x="getXPosition(pointIndex, dataset.data.length)"
+                        :y="getYPosition(value) - 10"
+                        text-anchor="middle"
+                        class="value-label"
+                        :fill="dataset.borderColor"
+                      >₱{{ value }}k</text>
+                    </g>
+                  </g>
+                </template>
+
+                <!-- Tooltip -->
+                <g v-if="tooltip.show" :transform="`translate(${tooltip.x},${tooltip.y})`">
+                  <rect 
+                    x="-60" 
+                    y="-40" 
+                    width="120" 
+                    height="35" 
+                    rx="4" 
+                    fill="white" 
+                    class="tooltip-bg"
+                  />
+                  <text x="0" y="-25" text-anchor="middle" class="tooltip-text">{{ tooltip.label }}</text>
+                  <text x="0" y="-10" text-anchor="middle" class="tooltip-value">₱{{ tooltip.value }}k</text>
+                </g>
               </svg>
             </div>
           </div>
           <div class="chart-x-axis">
-            <div>03/25</div>
-            <div>03/26</div>
-            <div>03/27</div>
-            <div>03/28</div>
-            <div>03/29</div>
+            <div v-for="(label, index) in salesData?.chart_data?.labels || []" 
+                 :key="index">
+              {{ formatDate(label) }}
+            </div>
           </div>
         </div>
       </div>
@@ -234,7 +241,16 @@ export default {
       salesData: null,
       topProducts: [],
       lowStockItems: [],
-      categoryPerformance: null
+      categoryPerformance: null,
+      yAxisValues: [24, 20, 16, 12, 8, 4, 0],
+      tooltip: {
+        show: false,
+        x: 0,
+        y: 0,
+        label: '',
+        value: 0,
+        date: ''
+      }
     }
   },
   mounted() {
@@ -425,6 +441,43 @@ export default {
     getCategoryClass(index) {
       const categories = ['uniform', 'books', 'other'];
       return categories[index] || '';
+    },
+    getXPosition(index, totalPoints) {
+      // Calculate x position based on index and total number of points
+      return (index / (totalPoints - 1)) * 500;
+    },
+    getYPosition(value) {
+      // Calculate y position based on value and chart height
+      const maxValue = Math.max(...this.yAxisValues);
+      return 200 - (value / maxValue) * 200;
+    },
+    getLinePath(data) {
+      return `M ${data.map((value, index) => 
+        `${this.getXPosition(index, data.length)} ${this.getYPosition(value)}`
+      ).join(' L')}`;
+    },
+    formatDate(dateString) {
+      // Format date as MM/DD
+      const date = new Date(dateString);
+      return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+    },
+    handleMouseMove(event) {
+      // Update tooltip position based on mouse movement
+      const rect = event.target.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      
+      this.tooltip.x = x;
+      this.tooltip.y = y;
+    },
+    showTooltip(event, label, value, date) {
+      this.tooltip.show = true;
+      this.tooltip.label = `${label} - ${this.formatDate(date)}`;
+      this.tooltip.value = value;
+      this.handleMouseMove(event);
+    },
+    hideTooltip() {
+      this.tooltip.show = false;
     }
   }
 }
@@ -560,10 +613,11 @@ export default {
   flex-direction: column;
   justify-content: space-between;
   padding-right: 10px;
-  font-size: 10px;
+  font-size: 12px;
   color: #999;
   border-right: 1px solid #eee;
   width: 30px;
+  height: 200px;
 }
 
 .chart-content {
@@ -579,9 +633,10 @@ export default {
 .chart-x-axis {
   display: flex;
   justify-content: space-between;
-  font-size: 10px;
+  font-size: 12px;
   color: #999;
   padding-left: 30px;
+  margin-top: 10px;
 }
 
 /* Static pie chart styling */
@@ -772,5 +827,53 @@ export default {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.grid-line {
+  stroke: #eee;
+  stroke-width: 1;
+}
+
+.data-line {
+  stroke-width: 2;
+  transition: all 0.3s;
+}
+
+.data-point {
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.data-point:hover {
+  r: 6;
+}
+
+.value-label {
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.data-point:hover + .value-label {
+  opacity: 1;
+}
+
+.tooltip-bg {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.tooltip-text {
+  font-size: 12px;
+  fill: #666;
+}
+
+.tooltip-value {
+  font-size: 14px;
+  font-weight: bold;
+  fill: #333;
+}
+
+.chart-y-axis {
+  min-width: 50px;
 }
 </style>

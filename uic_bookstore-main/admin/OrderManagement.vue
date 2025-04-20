@@ -2,9 +2,14 @@
   <div class="order-management">
     <div class="page-header">
       <h2>Overall Orders</h2>
-      <button class="add-btn" @click="openAddOrderModal">
-        <i class="fas fa-plus"></i> Add Order
-      </button>
+      <div class="header-buttons">
+        <button class="import-btn" @click="openImportModal">
+          <i class="fas fa-file-import"></i> Import Orders
+        </button>
+        <button class="add-btn" @click="openAddOrderModal">
+          <i class="fas fa-plus"></i> Add Order
+        </button>
+      </div>
     </div>
     
     <div class="search-filter-bar">
@@ -152,7 +157,7 @@
     <div class="modal" v-if="showViewOrderModal">
       <div class="modal-content view-order-modal">
         <div class="modal-header">
-          <h3>Order #{{ selectedOrder.id }}</h3>
+          <h3>{{ selectedOrder.isEditable ? 'Edit Order' : 'View Order' }} #{{ selectedOrder.id }}</h3>
           <button class="close-btn" @click="closeViewOrderModal">&times;</button>
         </div>
         <div class="modal-body">
@@ -170,7 +175,7 @@
             <div class="detail-row">
               <strong>Status:</strong>
               <span>
-                <select v-model="selectedOrder.status" @change="updateOrderStatus" :disabled="isUpdatingStatus">
+                <select v-model="selectedOrder.status" @change="updateOrderStatus" :disabled="isUpdatingStatus || !selectedOrder.isEditable">
                   <option value="Pending">Pending</option>
                   <option value="Completed">Completed</option>
                   <option value="Cancelled">Cancelled</option>
@@ -205,6 +210,53 @@
             </tfoot>
           </table>
         </div>
+        
+        <div class="modal-footer" v-if="selectedOrder.isEditable">
+          <button class="cancel-btn" @click="closeViewOrderModal">Cancel</button>
+          <button class="save-btn" @click="updateOrderStatus" :disabled="isUpdatingStatus">
+            {{ isUpdatingStatus ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal" v-if="showImportModal">
+      <div class="modal-content import-modal">
+        <div class="modal-header">
+          <h3>Import Orders</h3>
+          <button class="close-btn" @click="closeImportModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="import-instructions">
+            <p>Please select a CSV file with the following columns:</p>
+            <ul>
+              <li>customer_name</li>
+              <li>product_id</li>
+              <li>quantity</li>
+            </ul>
+          </div>
+          <div class="file-upload">
+            <input 
+              type="file" 
+              ref="fileInput" 
+              accept=".csv"
+              @change="handleFileUpload" 
+              class="file-input"
+            >
+          </div>
+          <div v-if="importError" class="error-message">{{ importError }}</div>
+        </div>
+        <div class="modal-footer">
+          <button class="cancel-btn" @click="closeImportModal">Cancel</button>
+          <button 
+            class="save-btn" 
+            @click="importOrders" 
+            :disabled="!selectedFile || isImporting"
+          >
+            {{ isImporting ? 'Importing...' : 'Import' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -231,7 +283,11 @@ export default {
       },
       isLoading: false,
       isUpdatingStatus: false,
-      error: null
+      error: null,
+      showImportModal: false,
+      selectedFile: null,
+      isImporting: false,
+      importError: null
     };
   },
   created() {
@@ -323,16 +379,17 @@ export default {
     
     viewOrder(order) {
       // Need to fetch the full order with items
-      this.fetchOrderDetails(order.id);
+      this.fetchOrderDetails(order.id, false);
     },
     
-    async fetchOrderDetails(orderId) {
+    async fetchOrderDetails(orderId, isEditable = false) {
       try {
         const response = await fetch(`http://localhost:8000/admin/orders/${orderId}`);
         
         if (response.ok) {
           const data = await response.json();
           this.selectedOrder = data;
+          this.selectedOrder.isEditable = isEditable; // Add flag to indicate if editable
           this.showViewOrderModal = true;
         } else {
           const errorData = await response.json();
@@ -350,7 +407,7 @@ export default {
     },
     
     editOrder(order) {
-      this.fetchOrderDetails(order.id);
+      this.fetchOrderDetails(order.id, true);
     },
     
     updateItemPrice(index) {
@@ -477,6 +534,14 @@ export default {
     async updateOrderStatus() {
       if (!this.selectedOrder.id) return;
       
+      // If we're in edit mode, show confirmation dialog
+      if (this.selectedOrder.isEditable) {
+        const confirmed = confirm("Are you sure you want to save the changes?");
+        if (!confirmed) {
+          return;
+        }
+      }
+      
       this.isUpdatingStatus = true;
       
       try {
@@ -493,6 +558,8 @@ export default {
         if (response.ok) {
           // Refresh order list
           this.loadOrders();
+          // Close the modal after successfully saving changes
+          this.closeViewOrderModal();
         } else {
           const errorData = await response.json();
           throw new Error(errorData.detail || 'Failed to update order status');
@@ -504,6 +571,56 @@ export default {
         this.fetchOrderDetails(this.selectedOrder.id);
       } finally {
         this.isUpdatingStatus = false;
+      }
+    },
+    
+    openImportModal() {
+      this.showImportModal = true;
+    },
+    
+    closeImportModal() {
+      this.showImportModal = false;
+      this.selectedFile = null;
+      this.importError = null;
+    },
+    
+    handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.selectedFile = file;
+      }
+    },
+    
+    async importOrders() {
+      if (!this.selectedFile) {
+        this.importError = 'Please select a file to import';
+        return;
+      }
+      
+      this.isImporting = true;
+      this.importError = null;
+      
+      try {
+        const formData = new FormData();
+        formData.append('file', this.selectedFile);
+        
+        const response = await fetch('http://localhost:8000/admin/orders/import', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          this.closeImportModal();
+          this.loadOrders();
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Failed to import orders');
+        }
+      } catch (error) {
+        console.error('Error importing orders:', error);
+        this.importError = error.message || 'Failed to import orders. Please try again.';
+      } finally {
+        this.isImporting = false;
       }
     }
   }
@@ -528,7 +645,12 @@ export default {
   color: #333;
 }
 
-.add-btn {
+.header-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.import-btn, .add-btn {
   background-color: #0066cc;
   color: white;
   border: none;
@@ -541,7 +663,7 @@ export default {
   align-items: center;
 }
 
-.add-btn i {
+.import-btn i, .add-btn i {
   margin-right: 0.5rem;
 }
 
@@ -874,5 +996,28 @@ textarea {
 
 .total-value {
   font-weight: bold;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.import-instructions {
+  margin-bottom: 1rem;
+}
+
+.file-upload {
+  margin-bottom: 1rem;
+}
+
+.file-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 </style> 

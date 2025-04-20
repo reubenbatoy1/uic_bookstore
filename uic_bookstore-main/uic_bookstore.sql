@@ -66,6 +66,7 @@ CREATE TABLE `products` (
   `name` varchar(100) NOT NULL,
   `category` varchar(50) NOT NULL,
   `price` decimal(10,2) NOT NULL,
+  `cost_price` decimal(10,2) NOT NULL,
   `stock` int(11) NOT NULL DEFAULT 0,
   `min_stock` int(11) DEFAULT NULL,
   `description` text DEFAULT NULL,
@@ -76,14 +77,14 @@ CREATE TABLE `products` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Insert sample products
-INSERT INTO `products` (`name`, `category`, `price`, `stock`, `min_stock`, `description`, `image_url`) VALUES
-('Polo', 'Uniform', 450.00, 30, NULL, 'School polo uniform', NULL),
-('Jogging Pants', 'Uniform', 400.00, 25, NULL, 'School jogging pants', NULL),
-('Blouse', 'Uniform', 425.00, 8, 10, 'School blouse uniform', NULL),
-('Physics Book', 'Books', 750.00, 15, NULL, 'Physics textbook', NULL),
-('Chemistry Book', 'Books', 750.00, 12, NULL, 'Chemistry textbook', NULL),
-('PE Book', 'Books', 500.00, 3, 5, 'Physical Education textbook', NULL),
-('Scantron', 'Other', 5.00, 45, 50, 'Scantron answer sheets', NULL); 
+INSERT INTO `products` (`name`, `category`, `price`, `cost_price`, `stock`, `min_stock`, `description`, `image_url`) VALUES
+('Polo', 'Uniform', 450.00, 350.00, 30, NULL, 'School polo uniform', NULL),
+('Jogging Pants', 'Uniform', 400.00, 300.00, 25, NULL, 'School jogging pants', NULL),
+('Blouse', 'Uniform', 425.00, 325.00, 8, 10, 'School blouse uniform', NULL),
+('Physics Book', 'Books', 750.00, 600.00, 15, NULL, 'Physics textbook', NULL),
+('Chemistry Book', 'Books', 750.00, 600.00, 12, NULL, 'Chemistry textbook', NULL),
+('PE Book', 'Books', 500.00, 400.00, 3, 5, 'Physical Education textbook', NULL),
+('Scantron', 'Other', 5.00, 3.00, 45, 50, 'Scantron answer sheets', NULL); 
 
 -- Stock Adjustments History Table
 CREATE TABLE IF NOT EXISTS stock_adjustments (

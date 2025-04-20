@@ -441,20 +441,20 @@ export default {
 }
 
 .header {
-  background-color: white;
+  background-color: #FFF0F5; /* Lavender blush */
   color: black;
   padding: 0.75rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #FFB6C1; /* Light pink */
 }
 
 .logo h1 {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #333;
+  color: #FF1493; /* Deep pink */
 }
 
 .header-right {
@@ -476,7 +476,7 @@ export default {
 }
 
 .user-info:hover {
-  background-color: #f5f5f5;
+  background-color: #FFE4E1; /* Misty rose */
 }
 
 .profile-picture {
@@ -484,7 +484,7 @@ export default {
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #f0f0f0;
+  border: 2px solid #FFB6C1; /* Light pink */
 }
 
 .username {
@@ -514,13 +514,13 @@ export default {
 .dropdown-menu li a {
   display: block;
   padding: 0.75rem 1rem;
-  color: #333;
+  color: #FF1493; /* Deep pink */
   text-decoration: none;
   transition: background-color 0.3s;
 }
 
 .dropdown-menu li a:hover {
-  background-color: #f5f5f5;
+  background-color: #FFE4E1; /* Misty rose */
 }
 
 .store-container {
@@ -560,6 +560,9 @@ export default {
   overflow: hidden;
   background-color: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .product-image {
@@ -578,6 +581,9 @@ export default {
 
 .product-info {
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .product-info h3 {
@@ -609,28 +615,36 @@ export default {
   margin-bottom: 0.5rem;
 }
 
+.product-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1rem;
+  flex-grow: 1;
+}
+
 .notify-btn {
   width: 100%;
   padding: 0.5rem;
-  background-color: #555555;
+  background-color: #FF69B4; /* Hot pink */
   border: none;
   border-radius: 4px;
   font-size: 0.85rem;
   cursor: pointer;
   transition: background-color 0.3s;
   color: white;
+  margin-top: auto;
 }
 
 .notify-btn:hover {
-  background-color: #444444;
+  background-color: #FF1493; /* Deep pink */
 }
 
 .notify-btn.notified {
-  background-color: #4CAF50;
+  background-color: #DB7093; /* Pale violet red */
 }
 
 .notify-btn.notified:hover {
-  background-color: #3d8b40;
+  background-color: #C71585; /* Medium violet red */
 }
 
 .back-button-container {
@@ -641,16 +655,16 @@ export default {
   display: inline-flex;
   align-items: center;
   padding: 0.5rem 1rem;
-  background-color: #f5f5f5;
+  background-color: #FFE4E1; /* Misty rose */
   border-radius: 4px;
-  color: #333;
+  color: #FF1493; /* Deep pink */
   text-decoration: none;
   font-size: 0.9rem;
   transition: background-color 0.3s;
 }
 
 .back-button:hover {
-  background-color: #e5e5e5;
+  background-color: #FFB6C1; /* Light pink */
 }
 
 .back-button i {
@@ -667,7 +681,7 @@ export default {
 
 .loading-spinner {
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #0066cc;
+  border-top: 4px solid #FF1493; /* Deep pink */
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -695,6 +709,7 @@ export default {
   font-size: 0.8rem;
   font-weight: 500;
   margin-bottom: 0.5rem;
+  align-self: flex-start;
 }
 
 .category-badge.uniform {

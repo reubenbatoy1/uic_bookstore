@@ -36,6 +36,7 @@ class Product(Base):
     name = Column(String(100), nullable=False)
     category = Column(String(50), nullable=False)
     price = Column(DECIMAL(10, 2), nullable=False)
+    cost_price = Column(DECIMAL(10, 2), nullable=False)
     stock = Column(Integer, nullable=False, default=0)
     min_stock = Column(Integer, nullable=True)
     description = Column(Text, nullable=True)

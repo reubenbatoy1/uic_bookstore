@@ -7,6 +7,7 @@ import StudentLogin from './student/StudentLogin.vue'
 import StudentSignup from './student/StudentSignup.vue'
 import StudentHomepage from './student/StudentHomepage.vue'
 import StudentStore from './student/StudentStore.vue'
+import StudentSettings from './student/StudentSettings.vue'
 // Admin components
 import AdminLogin from './admin/AdminLogin.vue'
 import AdminDashboard from './admin/AdminDashboard.vue'
@@ -41,6 +42,10 @@ const router = createRouter({
     { 
       path: '/student/books', 
       component: StudentStore 
+    },
+    { 
+      path: '/student/settings', 
+      component: StudentSettings 
     },
     
     // Admin routes
