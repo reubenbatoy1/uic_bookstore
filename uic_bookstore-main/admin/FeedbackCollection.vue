@@ -655,40 +655,4 @@ export default {
     box-shadow: 0 0 15px rgba(255, 75, 125, 0.8);
   }
 }
-<<<<<<< HEAD
-
-tr:hover {
-  background-color: #fff5f7;
-  transition: background 0.2s;
-}
-button, .add-btn, .view-btn, .edit-btn, .delete-btn, .save-btn, .cancel-btn, .confirm-btn {
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-}
-.add-btn:hover {
-  background-color: #ff4b7d;
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(255, 20, 147, 0.13);
-}
-.view-btn:hover {
-  background-color: #bbdefb;
-  color: #1565c0;
-}
-.edit-btn:hover {
-  background-color: #c8e6c9;
-  color: #2e7d32;
-}
-.delete-btn:hover {
-  background-color: #ffcdd2;
-  color: #c62828;
-}
-.save-btn:hover, .confirm-btn:hover {
-  background-color: #ff4b7d;
-  color: #fff;
-}
-.cancel-btn:hover {
-  background-color: #ffe4e1;
-  color: #ff4b7d;
-}
-=======
->>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
 </style> 

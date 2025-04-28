@@ -884,11 +884,7 @@ async def import_orders(file: UploadFile = File(...), db: Session = Depends(get_
         csv_reader = csv.DictReader(StringIO(csv_text))
         
         # Validate CSV headers
-<<<<<<< HEAD
         required_headers = {'customer_name', 'product_id', 'quantity', 'order_date'}
-=======
-        required_headers = {'customer_name', 'product_id', 'quantity'}
->>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
         headers = set(csv_reader.fieldnames)
         if not required_headers.issubset(headers):
             raise HTTPException(
@@ -903,7 +899,6 @@ async def import_orders(file: UploadFile = File(...), db: Session = Depends(get_
             try:
                 product_id = int(row['product_id'])
                 quantity = int(row['quantity'])
-<<<<<<< HEAD
                 order_date = datetime.strptime(row['order_date'], '%Y-%m-%d')
             except ValueError as e:
                 if 'order_date' in str(e):
@@ -911,9 +906,6 @@ async def import_orders(file: UploadFile = File(...), db: Session = Depends(get_
                         status_code=400,
                         detail="order_date must be in YYYY-MM-DD format"
                     )
-=======
-            except ValueError:
->>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
                 raise HTTPException(
                     status_code=400,
                     detail="product_id and quantity must be valid numbers"
@@ -946,12 +938,8 @@ async def import_orders(file: UploadFile = File(...), db: Session = Depends(get_
             orders_by_customer[customer_name].append({
                 'product_id': product_id,
                 'quantity': quantity,
-<<<<<<< HEAD
                 'price': float(product.price),
                 'order_date': order_date
-=======
-                'price': float(product.price)
->>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
             })
         
         # Create orders for each customer
@@ -960,21 +948,13 @@ async def import_orders(file: UploadFile = File(...), db: Session = Depends(get_
             # Create order
             new_order = models.Order(
                 customer_name=customer_name,
-<<<<<<< HEAD
                 status='Completed',  # Set as Completed by default
                 created_at=items[0]['order_date']
-=======
-                status='Pending'
->>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
             )
             db.add(new_order)
             db.flush()  # Get the order ID
             
-<<<<<<< HEAD
             # Create order items without updating stock
-=======
-            # Create order items and update stock
->>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
             for item in items:
                 order_item = models.OrderItem(
                     order_id=new_order.id,
@@ -983,14 +963,7 @@ async def import_orders(file: UploadFile = File(...), db: Session = Depends(get_
                     price=item['price']
                 )
                 db.add(order_item)
-<<<<<<< HEAD
-                # Removed the stock update code since these are historical orders
-=======
-                
-                # Update product stock
-                product = db.query(models.Product).filter(models.Product.id == item['product_id']).first()
-                product.stock -= item['quantity']
->>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
+                # No stock update for imported orders
             
             created_orders.append(new_order.id)
         

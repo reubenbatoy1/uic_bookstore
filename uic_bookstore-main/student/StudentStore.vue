@@ -555,24 +555,19 @@ export default {
 }
 
 .product-card {
-  border: 1px solid #eee;
-  border-radius: 8px;
-  overflow: hidden;
   background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
   display: flex;
   flex-direction: column;
   height: 100%;
-<<<<<<< HEAD
 }
 
 .product-card:hover {
-  box-shadow: 0 4px 16px rgba(255, 20, 147, 0.15), 0 1.5px 6px rgba(0,0,0,0.08);
-  transform: translateY(-6px) scale(1.03);
-  transition: box-shadow 0.3s, transform 0.3s;
-  border-color: #FFB6C1;
-=======
->>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
 .product-image {

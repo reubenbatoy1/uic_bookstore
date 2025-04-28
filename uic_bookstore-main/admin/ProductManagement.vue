@@ -87,7 +87,7 @@
           <form @submit.prevent="confirmSaveProduct" class="product-form">
             <div class="form-layout">
               <div class="image-section">
-                <div class="image-upload-container" @click="triggerFileInput">
+                <div class="image-upload-container" @click="uploadImage">
                   <div class="preview-container">
                     <img v-if="imagePreview" :src="imagePreview" alt="Product Preview" class="image-preview">
                     <div v-else class="upload-placeholder">
@@ -624,11 +624,10 @@ export default {
       this.showConfirmationModal = false;
     },
     
-    triggerFileInput() {
+    uploadImage() {
       if (this.$refs.fileInput) {
         this.$refs.fileInput.click();
       }
-<<<<<<< HEAD
     },
     
     highlightRow(product) {
@@ -637,8 +636,6 @@ export default {
     
     unhighlightRow(product) {
       this.highlightedRow = null;
-=======
->>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
     }
   }
 };
@@ -1055,20 +1052,11 @@ textarea {
   color: #333;
 }
 
-<<<<<<< HEAD
-.cancel-btn:hover {
-  background-color: #ffe4e1;
-  color: #ff4b7d;
-}
-
-=======
->>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
 .save-btn, .confirm-btn {
   background-color: #0066cc;
   color: white;
 }
 
-<<<<<<< HEAD
 .save-btn:hover, .confirm-btn:hover {
   background-color: #ff4b7d;
   color: #fff;
@@ -1078,12 +1066,6 @@ textarea {
   background-color: #e53935;
 }
 
-=======
-.confirm-btn.delete {
-  background-color: #e53935;
-}
-
->>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
 /* Messages */
 .error-message {
   margin-top: 1rem;
