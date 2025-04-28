@@ -883,6 +883,7 @@ export default {
 .chart-y-axis {
   min-width: 50px;
 }
+<<<<<<< HEAD
 
 .generate-report-btn {
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
@@ -893,4 +894,6 @@ export default {
   color: #fff;
   box-shadow: 0 2px 8px rgba(255, 20, 147, 0.13);
 }
+=======
+>>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
 </style>

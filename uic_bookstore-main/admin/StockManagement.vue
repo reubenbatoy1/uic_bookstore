@@ -971,6 +971,7 @@ textarea {
 .type-remove {
   color: #c62828;
 }
+<<<<<<< HEAD
 
 button, .add-btn, .view-btn, .edit-btn, .delete-btn, .save-btn, .cancel-btn, .confirm-btn, .history-btn, .adjust-btn {
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
@@ -1006,4 +1007,6 @@ button, .add-btn, .view-btn, .edit-btn, .delete-btn, .save-btn, .cancel-btn, .co
   background-color: #ffe4e1;
   color: #ff4b7d;
 }
+=======
+>>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
 </style> 

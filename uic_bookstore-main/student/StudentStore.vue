@@ -563,6 +563,7 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
+<<<<<<< HEAD
 }
 
 .product-card:hover {
@@ -570,6 +571,8 @@ export default {
   transform: translateY(-6px) scale(1.03);
   transition: box-shadow 0.3s, transform 0.3s;
   border-color: #FFB6C1;
+=======
+>>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
 }
 
 .product-image {

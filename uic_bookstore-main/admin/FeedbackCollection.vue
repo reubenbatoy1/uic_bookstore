@@ -655,6 +655,7 @@ export default {
     box-shadow: 0 0 15px rgba(255, 75, 125, 0.8);
   }
 }
+<<<<<<< HEAD
 
 tr:hover {
   background-color: #fff5f7;
@@ -688,4 +689,6 @@ button, .add-btn, .view-btn, .edit-btn, .delete-btn, .save-btn, .cancel-btn, .co
   background-color: #ffe4e1;
   color: #ff4b7d;
 }
+=======
+>>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
 </style> 

@@ -156,8 +156,13 @@
     <!-- View Order Modal (view only) -->
     <div class="modal" v-if="showViewOrderModal && !selectedOrder.isEditable">
       <div class="modal-content view-order-modal">
+<<<<<<< HEAD
         <div class="modal-header view-header">
           <h3><i class="fas fa-receipt"></i> View Order #{{ selectedOrder.id }}</h3>
+=======
+        <div class="modal-header">
+          <h3>{{ selectedOrder.isEditable ? 'Edit Order' : 'View Order' }} #{{ selectedOrder.id }}</h3>
+>>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
           <button class="close-btn" @click="closeViewOrderModal">&times;</button>
         </div>
         <div class="modal-body view-body">
@@ -171,11 +176,21 @@
               <span class="detail-value">{{ formatDate(selectedOrder.created_at) }}</span>
             </div>
             <div class="detail-row">
+<<<<<<< HEAD
               <strong><i class="fas fa-info-circle"></i> Status:</strong>
               <span class="detail-value">
                 <span :class="'status-badge ' + selectedOrder.status.toLowerCase()">
                   {{ selectedOrder.status }}
                 </span>
+=======
+              <strong>Status:</strong>
+              <span>
+                <select v-model="selectedOrder.status" @change="updateOrderStatus" :disabled="isUpdatingStatus || !selectedOrder.isEditable">
+                  <option value="Pending">Pending</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+>>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
               </span>
             </div>
           </div>
@@ -205,6 +220,53 @@
               </tr>
             </tfoot>
           </table>
+        </div>
+        
+        <div class="modal-footer" v-if="selectedOrder.isEditable">
+          <button class="cancel-btn" @click="closeViewOrderModal">Cancel</button>
+          <button class="save-btn" @click="updateOrderStatus" :disabled="isUpdatingStatus">
+            {{ isUpdatingStatus ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal" v-if="showImportModal">
+      <div class="modal-content import-modal">
+        <div class="modal-header">
+          <h3>Import Orders</h3>
+          <button class="close-btn" @click="closeImportModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="import-instructions">
+            <p>Please select a CSV file with the following columns:</p>
+            <ul>
+              <li>customer_name</li>
+              <li>product_id</li>
+              <li>quantity</li>
+            </ul>
+          </div>
+          <div class="file-upload">
+            <input 
+              type="file" 
+              ref="fileInput" 
+              accept=".csv"
+              @change="handleFileUpload" 
+              class="file-input"
+            >
+          </div>
+          <div v-if="importError" class="error-message">{{ importError }}</div>
+        </div>
+        <div class="modal-footer">
+          <button class="cancel-btn" @click="closeImportModal">Cancel</button>
+          <button 
+            class="save-btn" 
+            @click="importOrders" 
+            :disabled="!selectedFile || isImporting"
+          >
+            {{ isImporting ? 'Importing...' : 'Import' }}
+          </button>
         </div>
       </div>
     </div>
@@ -1073,6 +1135,7 @@ textarea {
   border: 1px solid #ddd;
   border-radius: 4px;
 }
+<<<<<<< HEAD
 
 .view-header {
   background: #e3f2fd;
@@ -1125,4 +1188,6 @@ textarea {
   align-items: center;
   gap: 0.5rem;
 }
+=======
+>>>>>>> 81b584e837377ff81d30f83eefd8cd3b44eb81ba
 </style> 
