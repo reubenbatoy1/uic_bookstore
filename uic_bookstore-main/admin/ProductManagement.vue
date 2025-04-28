@@ -34,7 +34,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="product in filteredProducts" :key="product.id">
+          <tr v-for="product in filteredProducts" :key="product.id" :class="{ 'low-stock': isLowStock(product) }" @click="viewProduct(product)" @mouseenter="highlightRow(product)" @mouseleave="unhighlightRow(product)">
             <td class="product-cell">
               <div class="product-image">
                 <img v-if="product.image_url" :src="getImageUrl(product.image_url)" :alt="product.name">
@@ -61,13 +61,13 @@
             </td>
             <td>{{ product.description }}</td>
             <td class="actions-cell">
-              <button class="view-btn" @click="viewProduct(product)">
+              <button class="view-btn" @click="viewProduct(product); $event.stopPropagation()">
                 <i class="fas fa-eye"></i>
               </button>
-              <button class="edit-btn" @click="editProduct(product)">
+              <button class="edit-btn" @click="editProduct(product); $event.stopPropagation()">
                 <i class="fas fa-edit"></i>
               </button>
-              <button class="delete-btn" @click="confirmDelete(product)">
+              <button class="delete-btn" @click="confirmDelete(product); $event.stopPropagation()">
                 <i class="fas fa-trash"></i>
               </button>
             </td>
@@ -326,7 +326,8 @@ export default {
       successMessage: null,
       imageFile: null,
       imagePreview: null,
-      imageFileName: ''
+      imageFileName: '',
+      highlightedRow: null
     };
   },
   created() {
@@ -627,6 +628,14 @@ export default {
       if (this.$refs.fileInput) {
         this.$refs.fileInput.click();
       }
+    },
+    
+    highlightRow(product) {
+      this.highlightedRow = product;
+    },
+    
+    unhighlightRow(product) {
+      this.highlightedRow = null;
     }
   }
 };
@@ -661,10 +670,17 @@ export default {
   cursor: pointer;
   display: flex;
   align-items: center;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
 .add-btn i {
   margin-right: 0.5rem;
+}
+
+.add-btn:hover {
+  background-color: #ff4b7d;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255, 20, 147, 0.13);
 }
 
 .search-filter-bar {
@@ -718,10 +734,15 @@ th {
 
 tr {
   border-bottom: 1px solid #eee;
+  transition: background 0.2s;
 }
 
 tr:last-child {
   border-bottom: none;
+}
+
+tr:hover {
+  background-color: #fff5f7;
 }
 
 .product-cell {
@@ -815,10 +836,16 @@ tr:last-child {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
 .view-btn {
   background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.view-btn:hover {
+  background-color: #bbdefb;
   color: #1565c0;
 }
 
@@ -827,8 +854,18 @@ tr:last-child {
   color: #2e7d32;
 }
 
+.edit-btn:hover {
+  background-color: #c8e6c9;
+  color: #2e7d32;
+}
+
 .delete-btn {
   background-color: #ffebee;
+  color: #c62828;
+}
+
+.delete-btn:hover {
+  background-color: #ffcdd2;
   color: #c62828;
 }
 
@@ -1007,6 +1044,7 @@ textarea {
   border: none;
   font-weight: 500;
   cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
 .cancel-btn {
@@ -1014,9 +1052,19 @@ textarea {
   color: #333;
 }
 
+.cancel-btn:hover {
+  background-color: #ffe4e1;
+  color: #ff4b7d;
+}
+
 .save-btn, .confirm-btn {
   background-color: #0066cc;
   color: white;
+}
+
+.save-btn:hover, .confirm-btn:hover {
+  background-color: #ff4b7d;
+  color: #fff;
 }
 
 .confirm-btn.delete {

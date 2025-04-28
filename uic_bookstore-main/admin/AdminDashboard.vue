@@ -874,6 +874,13 @@ export default {
   padding: 20px;
 }
 
+.stat-card:hover {
+  box-shadow: 0 6px 24px rgba(255, 20, 147, 0.13), 0 2px 8px rgba(0,0,0,0.10);
+  transform: translateY(-5px) scale(1.02);
+  transition: box-shadow 0.3s, transform 0.3s;
+  border-color: #FFB6C1;
+}
+
 .stat-card h3 {
   margin: 0 0 15px 0;
   font-size: 1.1rem;
@@ -922,6 +929,13 @@ export default {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   padding: 20px;
+}
+
+.dashboard-card:hover {
+  box-shadow: 0 6px 24px rgba(255, 20, 147, 0.13), 0 2px 8px rgba(0,0,0,0.10);
+  transform: translateY(-5px) scale(1.02);
+  transition: box-shadow 0.3s, transform 0.3s;
+  border-color: #FFB6C1;
 }
 
 .dashboard-card h3 {
@@ -1086,6 +1100,13 @@ export default {
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.top-selling-products:hover, .low-stock-items:hover {
+  box-shadow: 0 6px 24px rgba(255, 20, 147, 0.13), 0 2px 8px rgba(0,0,0,0.10);
+  transform: translateY(-5px) scale(1.02);
+  transition: box-shadow 0.3s, transform 0.3s;
+  border-color: #FFB6C1;
 }
 
 .top-selling-products h3, .low-stock-items h3 {

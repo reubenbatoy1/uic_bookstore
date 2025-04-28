@@ -153,11 +153,67 @@
       </div>
     </div>
     
-    <!-- View Order Modal -->
-    <div class="modal" v-if="showViewOrderModal">
+    <!-- View Order Modal (view only) -->
+    <div class="modal" v-if="showViewOrderModal && !selectedOrder.isEditable">
+      <div class="modal-content view-order-modal">
+        <div class="modal-header view-header">
+          <h3><i class="fas fa-receipt"></i> View Order #{{ selectedOrder.id }}</h3>
+          <button class="close-btn" @click="closeViewOrderModal">&times;</button>
+        </div>
+        <div class="modal-body view-body">
+          <div class="order-details view-details">
+            <div class="detail-row">
+              <strong><i class="fas fa-user"></i> Customer:</strong>
+              <span class="detail-value">{{ selectedOrder.customer_name }}</span>
+            </div>
+            <div class="detail-row">
+              <strong><i class="fas fa-calendar-alt"></i> Date:</strong>
+              <span class="detail-value">{{ formatDate(selectedOrder.created_at) }}</span>
+            </div>
+            <div class="detail-row">
+              <strong><i class="fas fa-info-circle"></i> Status:</strong>
+              <span class="detail-value">
+                <span :class="'status-badge ' + selectedOrder.status.toLowerCase()">
+                  {{ selectedOrder.status }}
+                </span>
+              </span>
+            </div>
+          </div>
+          <hr class="section-divider" />
+          <h4 class="section-title"><i class="fas fa-box"></i> Order Items</h4>
+          <table class="order-items-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in selectedOrder.items" :key="item.id">
+                <td>{{ item.product_name }}</td>
+                <td>₱{{ item.price }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>₱{{ (item.price * item.quantity).toFixed(2) }}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" class="total-label">Total:</td>
+                <td class="total-value">₱{{ calculateOrderTotal(selectedOrder) }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Order Modal (edit only) -->
+    <div class="modal" v-if="showViewOrderModal && selectedOrder.isEditable">
       <div class="modal-content view-order-modal">
         <div class="modal-header">
-          <h3>{{ selectedOrder.isEditable ? 'Edit Order' : 'View Order' }} #{{ selectedOrder.id }}</h3>
+          <h3>Edit Order #{{ selectedOrder.id }}</h3>
           <button class="close-btn" @click="closeViewOrderModal">&times;</button>
         </div>
         <div class="modal-body">
@@ -166,12 +222,10 @@
               <strong>Customer:</strong>
               <span>{{ selectedOrder.customer_name }}</span>
             </div>
-            
             <div class="detail-row">
               <strong>Date:</strong>
               <span>{{ formatDate(selectedOrder.created_at) }}</span>
             </div>
-            
             <div class="detail-row">
               <strong>Status:</strong>
               <span>
@@ -183,7 +237,6 @@
               </span>
             </div>
           </div>
-          
           <h4>Order Items</h4>
           <table class="order-items-table">
             <thead>
@@ -210,8 +263,7 @@
             </tfoot>
           </table>
         </div>
-        
-        <div class="modal-footer" v-if="selectedOrder.isEditable">
+        <div class="modal-footer">
           <button class="cancel-btn" @click="closeViewOrderModal">Cancel</button>
           <button class="save-btn" @click="updateOrderStatus" :disabled="isUpdatingStatus">
             {{ isUpdatingStatus ? 'Saving...' : 'Save Changes' }}
@@ -234,6 +286,7 @@
               <li>customer_name</li>
               <li>product_id</li>
               <li>quantity</li>
+              <li>order_date (YYYY-MM-DD format)</li>
             </ul>
           </div>
           <div class="file-upload">
@@ -1019,5 +1072,57 @@ textarea {
   padding: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;
+}
+
+.view-header {
+  background: #e3f2fd;
+  border-bottom: 1px solid #b3e5fc;
+}
+.view-header h3 {
+  color: #1976d2;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.view-body {
+  background: #f7fbff;
+}
+.view-details {
+  background: #f1f8e9;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #c8e6c9;
+}
+.detail-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.detail-row strong {
+  width: 140px;
+  font-weight: 600;
+  color: #388e3c;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.detail-value {
+  font-size: 1.05rem;
+  color: #333;
+}
+.section-divider {
+  border: none;
+  border-top: 1px solid #bdbdbd;
+  margin: 1.5rem 0 1rem 0;
+}
+.section-title {
+  color: #1976d2;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 </style> 

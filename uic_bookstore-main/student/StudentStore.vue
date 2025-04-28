@@ -565,6 +565,13 @@ export default {
   height: 100%;
 }
 
+.product-card:hover {
+  box-shadow: 0 4px 16px rgba(255, 20, 147, 0.15), 0 1.5px 6px rgba(0,0,0,0.08);
+  transform: translateY(-6px) scale(1.03);
+  transition: box-shadow 0.3s, transform 0.3s;
+  border-color: #FFB6C1;
+}
+
 .product-image {
   display: flex;
   align-items: center;

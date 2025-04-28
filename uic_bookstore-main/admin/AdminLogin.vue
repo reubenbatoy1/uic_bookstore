@@ -47,9 +47,6 @@
               {{ isLoading ? "Signing in..." : "Sign In" }}
             </button>
           </div>
-          <div class="signup-link">
-            <p>Don't have an account? <router-link to="/admin/signup" class="signup-button">Sign Up</router-link></p>
-          </div>
         </form>
         <div v-if="error" class="error-message">
           {{ error }}
@@ -415,23 +412,5 @@ button:disabled {
     width: 120px;
     height: 120px;
   }
-}
-
-.signup-link {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 0.95rem;
-  color: #666;
-}
-
-.signup-button {
-  color: #ff4b7d;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
-}
-
-.signup-button:hover {
-  text-decoration: underline;
 }
 </style>

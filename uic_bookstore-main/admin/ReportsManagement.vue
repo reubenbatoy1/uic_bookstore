@@ -5,9 +5,9 @@
       
       <div class="date-range-controls">
         <div class="date-inputs">
-          <input type="date" v-model="startDate" :max="endDate" @change="loadReportData">
+          <input type="date" v-model="startDate" :max="endDate">
           <span>to</span>
-          <input type="date" v-model="endDate" :min="startDate" @change="loadReportData">
+          <input type="date" v-model="endDate" :min="startDate">
         </div>
         
         <button class="generate-report-btn" @click="generateReport">
@@ -552,6 +552,13 @@ export default {
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.report-card:hover {
+  box-shadow: 0 6px 24px rgba(255, 20, 147, 0.13), 0 2px 8px rgba(0,0,0,0.10);
+  transform: translateY(-5px) scale(1.02);
+  border-color: #FFB6C1;
 }
 
 .report-card h3 {
@@ -875,5 +882,15 @@ export default {
 
 .chart-y-axis {
   min-width: 50px;
+}
+
+.generate-report-btn {
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.generate-report-btn:hover {
+  background-color: #ff4b7d;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255, 20, 147, 0.13);
 }
 </style>

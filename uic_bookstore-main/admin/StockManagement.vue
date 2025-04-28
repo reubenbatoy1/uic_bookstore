@@ -33,7 +33,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="product in filteredProducts" :key="product.id">
+          <tr v-for="product in filteredProducts" :key="product.id" :class="{'selected': selectedProduct === product}" @click="selectProduct(product)">
             <td>{{ product.name }}</td>
             <td>
               <span :class="'category-badge ' + product.category.toLowerCase()">
@@ -480,6 +480,10 @@ export default {
         case 'other': return 'Other';
         default: return reason;
       }
+    },
+    
+    selectProduct(product) {
+      this.selectedProduct = product;
     }
   }
 };
@@ -576,6 +580,11 @@ tr:last-child {
   border-bottom: none;
 }
 
+tr:hover {
+  background-color: #fff5f7;
+  transition: background 0.2s;
+}
+
 .category-badge {
   display: inline-block;
   padding: 0.2rem 0.5rem;
@@ -653,6 +662,11 @@ tr:last-child {
 
 .history-btn i, .adjust-btn i {
   margin-right: 0.25rem;
+}
+
+.history-btn:hover, .adjust-btn:hover {
+  background-color: #bbdefb;
+  color: #1565c0;
 }
 
 /* Modal styles */
@@ -956,5 +970,40 @@ textarea {
 
 .type-remove {
   color: #c62828;
+}
+
+button, .add-btn, .view-btn, .edit-btn, .delete-btn, .save-btn, .cancel-btn, .confirm-btn, .history-btn, .adjust-btn {
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.add-btn:hover {
+  background-color: #ff4b7d;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255, 20, 147, 0.13);
+}
+
+.view-btn:hover, .history-btn:hover {
+  background-color: #bbdefb;
+  color: #1565c0;
+}
+
+.edit-btn:hover, .adjust-btn:hover {
+  background-color: #c8e6c9;
+  color: #2e7d32;
+}
+
+.delete-btn:hover {
+  background-color: #ffcdd2;
+  color: #c62828;
+}
+
+.save-btn:hover, .confirm-btn:hover {
+  background-color: #ff4b7d;
+  color: #fff;
+}
+
+.cancel-btn:hover {
+  background-color: #ffe4e1;
+  color: #ff4b7d;
 }
 </style> 

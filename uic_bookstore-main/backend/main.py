@@ -884,7 +884,7 @@ async def import_orders(file: UploadFile = File(...), db: Session = Depends(get_
         csv_reader = csv.DictReader(StringIO(csv_text))
         
         # Validate CSV headers
-        required_headers = {'customer_name', 'product_id', 'quantity'}
+        required_headers = {'customer_name', 'product_id', 'quantity', 'order_date'}
         headers = set(csv_reader.fieldnames)
         if not required_headers.issubset(headers):
             raise HTTPException(
@@ -899,7 +899,13 @@ async def import_orders(file: UploadFile = File(...), db: Session = Depends(get_
             try:
                 product_id = int(row['product_id'])
                 quantity = int(row['quantity'])
-            except ValueError:
+                order_date = datetime.strptime(row['order_date'], '%Y-%m-%d')
+            except ValueError as e:
+                if 'order_date' in str(e):
+                    raise HTTPException(
+                        status_code=400,
+                        detail="order_date must be in YYYY-MM-DD format"
+                    )
                 raise HTTPException(
                     status_code=400,
                     detail="product_id and quantity must be valid numbers"
@@ -932,7 +938,8 @@ async def import_orders(file: UploadFile = File(...), db: Session = Depends(get_
             orders_by_customer[customer_name].append({
                 'product_id': product_id,
                 'quantity': quantity,
-                'price': float(product.price)
+                'price': float(product.price),
+                'order_date': order_date
             })
         
         # Create orders for each customer
@@ -941,12 +948,13 @@ async def import_orders(file: UploadFile = File(...), db: Session = Depends(get_
             # Create order
             new_order = models.Order(
                 customer_name=customer_name,
-                status='Pending'
+                status='Completed',  # Set as Completed by default
+                created_at=items[0]['order_date']
             )
             db.add(new_order)
             db.flush()  # Get the order ID
             
-            # Create order items and update stock
+            # Create order items without updating stock
             for item in items:
                 order_item = models.OrderItem(
                     order_id=new_order.id,
@@ -955,10 +963,7 @@ async def import_orders(file: UploadFile = File(...), db: Session = Depends(get_
                     price=item['price']
                 )
                 db.add(order_item)
-                
-                # Update product stock
-                product = db.query(models.Product).filter(models.Product.id == item['product_id']).first()
-                product.stock -= item['quantity']
+                # Removed the stock update code since these are historical orders
             
             created_orders.append(new_order.id)
         
@@ -1001,7 +1006,7 @@ def get_sales_report(
                 products p ON oi.product_id = p.id
             WHERE 
                 DATE(o.created_at) BETWEEN :start_date AND :end_date
-                AND o.status != 'Cancelled'
+                AND o.status = 'Completed'
             GROUP BY 
                 DATE(o.created_at), p.category
             ORDER BY 
@@ -1136,7 +1141,7 @@ def get_top_products(
                 products p ON oi.product_id = p.id
             WHERE 
                 DATE(o.created_at) BETWEEN :start_date AND :end_date
-                AND o.status != 'Cancelled'
+                AND o.status = 'Completed'
             GROUP BY 
                 p.id, p.name, p.category
             ORDER BY 
@@ -1260,7 +1265,7 @@ def get_category_performance(
                 products p ON oi.product_id = p.id
             WHERE 
                 DATE(o.created_at) BETWEEN :start_date AND :end_date
-                AND o.status != 'Cancelled'
+                AND o.status = 'Completed'
             GROUP BY 
                 p.category
         """
@@ -1316,7 +1321,7 @@ def get_category_performance(
                 JOIN 
                     products p ON oi.product_id = p.id
                 WHERE
-                    o.status != 'Cancelled'
+                    o.status = 'Completed'
                 GROUP BY 
                     p.category
             """
